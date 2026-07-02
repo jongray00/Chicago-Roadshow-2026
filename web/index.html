@@ -100,7 +100,7 @@
   /* ============ BOTTOM-RIGHT STACK: above page content; below pp-modal(9500), toast(9999) ============ */
   .bottom-right-stack {
     position: fixed; right: 18px; bottom: 18px; z-index: 200;
-    display: flex; flex-direction: column; align-items: flex-end; gap: 14px;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 18px;
     pointer-events: none;
   }
   .bottom-right-stack > * { pointer-events: auto; }
@@ -338,24 +338,28 @@
   }
   .receipt-toast .receipt { transform: rotate(0); }
 
-  /* ============ STEP UNLOCK micro-celebrations ============ */
+  /* ============ STEP UNLOCK micro-celebrations ============
+     Quiet by design: a compact card-style toast in the app's own vocabulary
+     (mono eyebrow + name, blue keyline), calm ease-out motion. The only loud
+     celebration in the product is the grand finale. */
   .toast-unlock {
-    position: fixed; top: 50px; left: 50%;
-    transform: translateX(-50%) translateY(-12px);
+    position: fixed; bottom: 34px; left: 50%;
+    transform: translateX(-50%) translateY(8px);
     z-index: 75; opacity: 0;
-    background: linear-gradient(135deg, rgba(4,78,244,0.95), rgba(247,42,114,0.92));
-    color: #fff; padding: 12px 20px; border-radius: 10px;
-    border: 1px solid #40E0D0;
-    box-shadow: 0 4px 20px rgba(64,224,208,.3);
-    display: inline-flex; align-items: center; gap: 12px;
-    font-size: 16px; font-weight: 700; letter-spacing: 0.01em;
-    transition: opacity 0.25s ease, transform 0.35s cubic-bezier(0.2, 1.5, 0.3, 1);
+    background: var(--sw-card);
+    border: 1px solid var(--sw-border); border-left: 3px solid #044EF4;
+    border-radius: 10px; padding: 10px 18px;
+    box-shadow: 0 10px 32px rgba(0,0,0,0.45);
+    display: inline-flex; align-items: baseline; gap: 10px;
+    transition: opacity 0.22s ease, transform 0.28s ease-out;
     pointer-events: none;
   }
   .toast-unlock.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast-unlock .toast-unlock-icon { font-size: 22px; }
-  .toast-unlock strong { letter-spacing: 0.06em; font-weight: 700; }
-  .toast-unlock .toast-unlock-sub { color: rgba(255,255,255,0.85); margin-left: 6px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; }
+  .toast-unlock .toast-unlock-step {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: #6ea0ff;
+  }
+  .toast-unlock .toast-unlock-name { color: var(--sw-text-bright); font-weight: 700; font-size: 15px; }
 
   .confetti-burst {
     position: fixed; width: 0; height: 0; z-index: 65; pointer-events: none;
@@ -372,11 +376,11 @@
   }
 
   .step-section.is-just-unlocked {
-    animation: section-pulse 900ms ease-out;
+    animation: section-pulse 700ms ease-out;
   }
   @keyframes section-pulse {
     0%   { box-shadow: 0 0 0 0 rgba(247,42,114,0.0), 0 32px 80px -24px rgba(247,42,114,0.35); }
-    35%  { box-shadow: 0 0 0 8px rgba(247,42,114,0.35), 0 32px 80px -24px rgba(247,42,114,0.6); }
+    35%  { box-shadow: 0 0 0 3px rgba(247,42,114,0.18), 0 32px 80px -24px rgba(247,42,114,0.45); }
     100% { box-shadow: 0 0 0 0 rgba(247,42,114,0.0), 0 32px 80px -24px rgba(247,42,114,0.35); }
   }
 
@@ -393,6 +397,27 @@
   }
   .topbar nav a { color: rgba(240,244,250,0.7); text-decoration: none; font-size: 13px; margin-left: 22px; }
   .topbar nav a:hover { color: var(--sw-text-bright); text-decoration: none; }
+
+  /* ============ ACCOUNT CHIP ============ */
+  .topbar { position: relative; }
+  .acct-chip-wrap { margin-left: auto; position: relative; }
+  .acct-chip { display: inline-flex; align-items: center; gap: 9px; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600;
+    padding: 7px 13px; border-radius: 999px; border: 1px solid var(--sw-border);
+    background: rgba(255,255,255,.03); color: var(--sw-text); }
+  .acct-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .acct-chip.shared .acct-dot { background: #6ea0ff; box-shadow: 0 0 0 3px rgba(110,160,255,.18); }
+  .acct-chip.own { border-color: rgba(247,42,114,.45); }
+  .acct-chip.own .acct-dot { background: var(--sw-magenta); box-shadow: 0 0 0 3px rgba(247,42,114,.2); }
+  .acct-caret { opacity: .55; font-size: 10px; }
+  .acct-menu { position: absolute; right: 0; top: calc(100% + 8px); width: 250px; z-index: 60;
+    background: var(--sw-card-2); border: 1px solid var(--sw-border); border-radius: 10px;
+    padding: 6px; box-shadow: 0 18px 40px rgba(0,0,0,.5); }
+  .acct-menu button { display: block; width: 100%; text-align: left; background: none; border: 0;
+    color: var(--sw-text); padding: 9px 12px; border-radius: 7px; font-size: 13.5px; cursor: pointer; }
+  .acct-menu button:hover { background: rgba(255,255,255,.05); }
+  .acct-menu .mi-hl { color: var(--sw-magenta); }
+  .acct-menu small { display: block; color: var(--sw-text-dim); font-size: 11.5px; }
 
   /* ============ HERO with WIZARD ============ */
   .hero {
@@ -496,7 +521,7 @@
   /* url-card — secondary "advanced" affordance: copy the raw SWML URL.
      Deliberately quiet; most attendees just point the number (above). */
   .url-card {
-    margin-top: 16px;
+    margin-top: 12px;
     background: transparent;
     border: 1px dashed var(--sw-border);
     border-radius: 10px;
@@ -600,7 +625,7 @@
 
   /* Loud, inviting signup invite — primary CTA for new users */
   .signup-invite {
-    display: flex; align-items: center; justify-content: space-between; gap: 18px;
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
     margin: 22px 0 6px; padding: 22px 24px;
     border-radius: 14px;
     text-decoration: none;
@@ -638,6 +663,67 @@
     display: inline-flex; align-items: center; gap: 8px;
     white-space: nowrap;
   }
+  .signup-invite.compact { padding:12px 14px; margin:12px 0 2px; }
+  .signup-invite.compact .signup-invite-headline { font-size:15px; }
+  .signup-invite.compact .signup-invite-sub { font-size:12px; }
+
+  /* === Landing: Meet Buddy, start first, log in later ================== */
+  /* Full-bleed brand glow on the hero SECTION (not the width-constrained
+     inner box, which would clip the radials into a visible rectangle). */
+  .landing-hero-bg {
+    background:
+      radial-gradient(720px 340px at 22% -5%, rgba(4,78,244,0.16), transparent 70%),
+      radial-gradient(640px 320px at 78% 6%, rgba(247,42,114,0.12), transparent 70%),
+      radial-gradient(480px 260px at 50% 40%, rgba(96,27,230,0.10), transparent 75%);
+  }
+  .landing-hero h1 { margin-bottom: 18px; }
+  .landing-hero h1 .accent {
+    background: linear-gradient(92deg, #6ea0ff 5%, #a06bff 45%, #F72A72 95%);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent; -webkit-text-fill-color: transparent;
+  }
+  /* Buddy's live avatar: the same robot the browser call renders, framed in a
+     slowly rotating brand-gradient ring, like an incoming call from Buddy. */
+  .landing-avatar-wrap { position: relative; width: 136px; height: 136px; margin: 6px auto 22px; }
+  .landing-avatar-ring {
+    position: absolute; inset: -7px; border-radius: 50%;
+    background: conic-gradient(from 0deg, #044EF4, #601BE6, #F72A72, #601BE6, #044EF4);
+    animation: la-spin 7s linear infinite;
+    filter: drop-shadow(0 0 22px rgba(96,27,230,0.45));
+  }
+  @keyframes la-spin { to { transform: rotate(360deg); } }
+  .landing-avatar {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    border-radius: 50%; object-fit: cover; z-index: 1;
+    border: 3px solid #0d0f1c; background: #0d0f1c;
+  }
+  @media (prefers-reduced-motion: reduce) { .landing-avatar-ring { animation: none; } }
+  .btn-start {
+    background: linear-gradient(135deg, #044EF4 0%, #601BE6 55%, #F72A72 130%);
+    color: #fff; border: none; border-radius: 14px; cursor: pointer;
+    font-weight: 800; font-size: 18px; padding: 16px 44px;
+    box-shadow: 0 10px 34px rgba(96,27,230,0.45), 0 2px 12px rgba(4,78,244,0.35);
+    transition: transform .16s ease, box-shadow .16s ease;
+  }
+  .btn-start:hover, .btn-start:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 44px rgba(247,42,114,0.40), 0 4px 16px rgba(4,78,244,0.40);
+  }
+  .buddy-bubble {
+    display:flex; gap:12px; align-items:flex-start; max-width:640px; margin:0 auto 26px;
+    background:rgba(247,42,114,.08); border:1px solid rgba(247,42,114,.35);
+    border-radius:14px; padding:16px 20px; text-align:left;
+  }
+  .buddy-bubble .bb-icon { font-size:18px; line-height:1.4; }
+  .buddy-bubble p { margin:0; color:var(--sw-text); line-height:1.55; }
+  .landing-cta-row { text-align:center; margin-bottom:14px; }
+  .landing-defer {
+    max-width:560px; margin:0 auto; text-align:center;
+    color:var(--sw-text-dim); font-size:14px; line-height:1.55;
+  }
+  .landing-auth-links { display:block; margin-top:6px; }
+  .landing-auth-links a { color:#6ea0ff; text-decoration:none; }
+  .landing-auth-links a:hover, .landing-auth-links a:focus-visible { text-decoration:underline; }
 
   /* Divider between the signup invite and the credentials inputs */
   .creds-divider {
@@ -736,6 +822,7 @@
   .wizard-card-success { text-align: center; }
   .wizard-card-success .lead, .wizard-card-success .wizard-helper { text-align: center; }
   .wizard-card-success .wizard-nav { justify-content: space-between; }
+
   .big-number {
     font-family: 'JetBrains Mono', 'SF Mono', monospace;
     font-size: 44px; font-weight: 700; letter-spacing: -0.02em;
@@ -743,13 +830,109 @@
     margin: 18px 0 10px;
   }
 
-  /* === Per-version "call Buddy and ask him" prompt (Task 1.6) === */
-  .running-version-badge { text-align:center; font-size:13px; color:var(--sw-text-dim); margin:6px 0 2px; }
-  .running-version-badge .rv-phone { color:var(--sw-text-bright); font-weight:700; }
-  .step-call-cta { display:flex; gap:12px; align-items:flex-start; background:rgba(247,42,114,.08);
-    border:1px solid rgba(247,42,114,.35); border-radius:10px; padding:12px 14px; margin:12px 0; }
-  .step-call-cta .scc-icon { font-size:20px; }
-  .step-call-cta .scc-sub { display:block; color:var(--sw-text-dim); font-weight:400; margin-top:2px; }
+  /* === Dial strip: each version's phone line, front and center =========
+     Three states: dedicated line (shared mode), your-number-follows (solo),
+     and a muted never-vanishing empty state. Blue = the card's action, so it
+     reads apart from the pink "important parts" panels. */
+  .dial-strip {
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+    background:linear-gradient(90deg, rgba(4,78,244,0.10), rgba(4,78,244,0.03) 55%, transparent), var(--sw-card);
+    border:1px solid rgba(4,78,244,0.35); border-left:3px solid #044EF4;
+    border-radius:12px; padding:10px 14px; margin:10px 0;
+  }
+  .dial-strip .ds-badge {
+    position:relative; width:34px; height:34px; border-radius:11px; flex-shrink:0;
+    background:rgba(4,78,244,0.16); color:#6ea0ff; display:grid; place-items:center;
+  }
+  .dial-strip .ds-badge svg { width:19px; height:19px; }
+  .step-section.active .dial-strip.has-number .ds-badge::after {
+    content:""; position:absolute; inset:-4px; border-radius:14px;
+    border:1px solid rgba(4,78,244,0.55); animation:ds-pulse 2.6s ease-out infinite;
+  }
+  @keyframes ds-pulse {
+    0% { transform:scale(0.92); opacity:0.9; }
+    70% { transform:scale(1.18); opacity:0; }
+    100% { transform:scale(1.18); opacity:0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .step-section.active .dial-strip.has-number .ds-badge::after { animation:none; opacity:0; }
+  }
+  .dial-strip .ds-main { flex:1 1 240px; min-width:0; line-height:1.3; }
+  .dial-strip .ds-label {
+    display:block; font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:700;
+    letter-spacing:0.12em; text-transform:uppercase; color:#6ea0ff;
+  }
+  .dial-strip .ds-number {
+    display:inline-block; font-family:'JetBrains Mono',monospace; font-weight:700;
+    font-size:clamp(16px,2vw,19px); letter-spacing:0.015em;
+    color:var(--sw-text-bright); text-decoration:none; margin-top:2px;
+  }
+  .dial-strip a.ds-number:hover, .dial-strip a.ds-number:focus-visible { color:#9db9ff; }
+  .dial-strip .ds-sub { display:block; color:var(--sw-text-dim); font-size:13px; margin-top:3px; }
+  .dial-strip .ds-actions { flex-shrink:0; }
+  .dial-strip.no-number { border-color:var(--sw-border); border-left-color:var(--sw-border); background:var(--sw-card); }
+  .dial-strip.no-number .ds-badge { background:rgba(255,255,255,0.06); color:var(--sw-text-dim); }
+  .dial-strip.no-number .ds-label { color:var(--sw-text-dim); }
+
+  /* === Voice orb: minimal in-card voice-only browser call, brand blue ==== */
+  .voice-orb {
+    position: relative; width: 56px; height: 56px; border-radius: 50%;
+    background: transparent; border: 2px solid rgba(4,78,244,0.55); cursor: pointer;
+    display: grid; place-items: center; color: #6ea0ff;
+    transition: border-color .18s ease, box-shadow .18s ease;
+  }
+  .voice-orb:hover, .voice-orb:focus-visible { border-color: #6ea0ff; box-shadow: 0 0 18px rgba(4,78,244,0.45); }
+  .voice-orb .orb-glyph svg { width: 20px; height: 20px; }
+  .voice-orb .orb-canvas {
+    position: absolute; left: 50%; top: 50%; width: 72px; height: 72px;
+    transform: translate(-50%, -50%); pointer-events: none; display: none;
+  }
+  .voice-orb.is-connecting { animation: orb-pulse 1.2s ease-in-out infinite; }
+  @keyframes orb-pulse { 50% { box-shadow: 0 0 22px rgba(4,78,244,0.6); border-color: #9db9ff; } }
+  .voice-orb.is-live { border-color: transparent; }
+  .voice-orb.is-live .orb-canvas { display: block; }
+  .voice-orb.is-live .orb-glyph { color: #f0f0f4; }
+  .voice-orb.is-live .orb-glyph svg { display: none; }
+  .voice-orb.is-live .orb-glyph::after { content: "✕"; font-size: 16px; font-weight: 700; }
+  /* Live call bar: soundwave lanes + device selects + hangup, inside the strip */
+  .ds-callbar {
+    flex-basis: 100%; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(4,78,244,0.25);
+  }
+  .cb-lane { display: inline-flex; align-items: center; gap: 8px; }
+  .cb-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--sw-text-dim);
+  }
+  .cb-wave { width: 64px; height: 28px; }
+  .cb-devices { display: inline-flex; gap: 10px; margin-left: auto; align-items: center; flex-wrap: wrap; }
+  .cb-dev { display: inline-flex; align-items: center; gap: 7px; }
+  .cb-dev-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--sw-text-dim);
+  }
+  .cb-select {
+    appearance: none; -webkit-appearance: none;
+    background: var(--sw-dark) url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%236ea0ff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 9px center;
+    border: 1px solid var(--sw-border); color: var(--sw-text);
+    font-family: 'Outfit', sans-serif; font-size: 12px;
+    border-radius: 8px; padding: 5px 26px 5px 10px; max-width: 190px;
+    cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease;
+    text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
+  }
+  .cb-select:hover { border-color: rgba(4,78,244,0.55); }
+  .cb-select:focus-visible { outline: none; border-color: #6ea0ff; box-shadow: 0 0 0 3px rgba(4,78,244,0.25); }
+  .cb-select option { background: var(--sw-card); color: var(--sw-text); }
+  .cb-end {
+    background: transparent; border: 1px solid rgba(247,42,114,0.5); color: #ff7aa8;
+    border-radius: 8px; padding: 5px 12px; font-size: 12px; font-weight: 700; cursor: pointer;
+  }
+  .cb-end:hover, .cb-end:focus-visible { border-color: #F72A72; background: rgba(247,42,114,0.1); }
+  @media (prefers-reduced-motion: reduce) {
+    .voice-orb.is-connecting { animation: none; }
+    .voice-orb.is-live { border-color: #6ea0ff; box-shadow: 0 0 18px rgba(4,78,244,0.5); }
+    .voice-orb.is-live .orb-canvas { display: none; }
+  }
 
   /* === Power-up code spotlight: the real code change for each level === */
   .powerup {
@@ -863,11 +1046,12 @@
   .ac-codewrap { min-width: 0; }
   .ac-newtag {
     margin-left: auto; font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
-    color: var(--sw-cyan, #40E0D0); text-transform: uppercase;
+    color: #6ea0ff; text-transform: uppercase;
   }
   .ac-pre {
-    margin: 0; padding: 10px 0; overflow: auto; max-height: 300px; line-height: 1.55;
-    font-family: 'JetBrains Mono','SF Mono',monospace; font-size: 12.5px; color: #d4d4d8;
+    margin: 0; padding: 10px 0; overflow: auto; max-height: 230px; line-height: 1.5;
+    font-family: 'JetBrains Mono','SF Mono',monospace; font-size: 12.5px; color: #c9d1d9;
+    background: #0d0d16;
   }
   .ac-pre.expanded { max-height: 1400px; }
   .ac-expand {
@@ -877,15 +1061,15 @@
   .ac-expand:hover, .ac-expand:focus-visible { border-color: var(--sw-blue, #044EF4); outline: none; }
   .ac-line {
     display: flex; align-items: baseline; gap: 8px;
-    padding: 1px 6px; border-left: 2px solid transparent; white-space: pre;
+    padding: 0 10px; border-left: 2px solid transparent; white-space: pre;
     transition: background .2s ease, border-color .2s ease;
   }
-  .ac-line.is-new {
-    border-left-color: var(--sw-cyan, #40E0D0);
-    background: rgba(64,224,208,.06);
-  }
+  /* "New in this version" lines get a subtle blue change-bar in the gutter —
+     no full-width background band (that read as zebra striping). */
+  .ac-line.is-new { border-left-color: rgba(4,78,244,.55); background: transparent; }
+  /* Only the line whose callout is being hovered/clicked highlights, one at a time. */
   .ac-line.spotlight {
-    background: rgba(247,42,114,.16);
+    background: rgba(247,42,114,.14);
     border-left-color: var(--sw-magenta, #F72A72);
   }
   .ac-gutter { display: inline-block; width: 1.4em; flex: 0 0 auto; }
@@ -904,10 +1088,16 @@
   .ac-code {
     white-space: pre;
     font-family: 'JetBrains Mono','SF Mono',monospace;
+    /* Reset the global inline-`code` pill: no per-line grey box, so the code
+       sits flat on the uniform .ac-pre surface (no boxed / zebra look). */
+    background: transparent; padding: 0; border-radius: 0;
+    font-size: inherit; color: inherit;
   }
-  .tok-kw { color: var(--sw-purple, #601BE6); filter: brightness(1.5); }
-  .tok-str { color: var(--sw-cyan, #40E0D0); }
-  .tok-com { color: #7d8590; font-style: italic; }
+  /* Sleek, on-brand syntax palette: soft purple keywords, soft blue strings,
+     muted gray comments. No teal/green/yellow. */
+  .tok-kw { color: #c792ff; }
+  .tok-str { color: #7fb0ff; }
+  .tok-com { color: #6b7280; font-style: italic; }
   .ac-callouts { display: flex; flex-direction: column; gap: 10px; min-width: 0; justify-content: space-between; }
   .ac-callouts .ac-callout { flex: 1 1 auto; align-items: center; }
   .ac-callouts-label {
@@ -975,7 +1165,7 @@
   }
 
   /* try-saying - speakable prompt chips */
-  .try-saying { margin-top: 22px; }
+  .try-saying { margin-top: 12px; }
   .try-label {
     font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--sw-text-dim); font-weight: 700; margin-bottom: 10px;
@@ -1047,17 +1237,93 @@
   }
 
   /* ============ BROWSER-CALL SECTION (widget + Live Wire feed) ============ */
-  .cf-section { max-width: 980px; margin: 0 auto; padding: 32px 20px 8px; }
-  .cf-head { text-align: center; margin-bottom: 24px; }
-  .cf-head .label {
-    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--sw-cyan); font-weight: 600;
+  /* ===== Call hub: "put the complete Buddy on a real call" =====
+     NOTE: prefixed .callhub-* (NOT .finale-*) to avoid colliding with the
+     separate grand-finale section's .finale design system below, whose
+     .finale base rule is opacity:0 (revealed via .is-revealed). */
+  .callhub { max-width: 1000px; margin: 0 auto; padding: 56px 20px 8px; }
+  .callhub-head { text-align: center; margin-bottom: 30px; }
+  .callhub-eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--sw-blue); margin-bottom: 10px;
   }
-  .cf-head h2 { margin: 6px 0; }
-  .cf-head p { color: var(--sw-text-dim); max-width: 720px; margin: 0 auto; }
-  .lw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-  @media (max-width: 860px) { .lw-grid { grid-template-columns: 1fr; } }
-  .lw-call-pane { display: flex; flex-direction: column; }
+  .callhub-title { font-size: clamp(26px, 4vw, 38px); color: var(--sw-text-bright); margin: 0 0 10px; line-height: 1.12; }
+  .callhub-sub { color: var(--sw-text-dim); max-width: 600px; margin: 0 auto; font-size: 15px; }
+
+  .callhub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; align-items: stretch; }
+  @media (max-width: 760px) { .callhub-grid { grid-template-columns: 1fr; } }
+
+  /* Both call-direction cards share one identical style, in SignalWire blue. */
+  .dir-card {
+    position: relative; display: flex; flex-direction: column;
+    background: var(--sw-card); border: 1px solid var(--sw-border);
+    border-radius: 16px; padding: 26px 26px 24px;
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .dir-card:hover { transform: translateY(-2px); border-color: rgba(4,78,244,0.5); box-shadow: 0 10px 30px rgba(4,78,244,0.12); }
+  .dir-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .dir-icon { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; flex-shrink: 0; background: rgba(4,78,244,0.16); color: #6ea0ff; }
+  .dir-icon svg { width: 21px; height: 21px; }
+  .dir-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: #6ea0ff;
+  }
+  .dir-title { font-size: 20px; color: var(--sw-text-bright); margin: 0 0 6px; }
+  .dir-desc { font-size: 14px; color: var(--sw-text-dim); line-height: 1.5; margin: 0 0 18px; flex: 0 0 auto; }
+  .dir-action { margin-top: 18px; }
+  .c2c-gate { text-align:center; padding:26px 18px; }
+  .c2c-gate-title { color:var(--sw-text); margin:0 0 14px; }
+  .signup-line { color:var(--sw-text-dim); font-size:13px; margin:12px 0 0; }
+  .signup-line a { color:#6ea0ff; }
+
+  /* One shared blue action button for both cards. */
+  .dir-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px; width: 100%;
+    background: var(--sw-blue); color: #fff;
+    border: 0; border-radius: 10px; padding: 13px 20px; font-weight: 700; font-size: 15px;
+    font-family: inherit; cursor: pointer; transition: background .15s ease, transform .15s ease;
+  }
+  .dir-btn:hover { background: #0a5bff; transform: translateY(-1px); }
+  .dir-btn:focus-visible { outline: 2px solid var(--sw-blue); outline-offset: 3px; }
+  .dir-locked-hint { display: none; font-size: 12.5px; color: var(--sw-text-dim); margin-top: 11px; text-align: center; }
+
+  /* Theme the click-to-call widget's button to brand blue (it ships green). */
+  #c2c-widget-mount button,
+  #c2c-widget-mount [role="button"],
+  #c2c-widget-mount sw-click-to-call::part(button) {
+    background: var(--sw-blue) !important; background-image: none !important;
+    color: #fff !important; border-color: var(--sw-blue) !important;
+  }
+
+  /* Outbound locked state (until all four versions are visited) — neutral, no accent. */
+  .dir-card--outbound.is-locked .dir-icon { background: rgba(255,255,255,0.05); color: var(--sw-text-dim); }
+  .dir-card--outbound.is-locked .dir-tag { color: var(--sw-text-dim); }
+  .dir-card--outbound.is-locked .dir-btn { background: var(--sw-card-2); color: var(--sw-text-dim); cursor: not-allowed; transform: none; }
+  .dir-card--outbound.is-locked .dir-locked-hint { display: block; }
+
+  /* Live Wire, full width under the two cards */
+  .callhub-wire { background: var(--sw-card); border: 1px solid var(--sw-border); border-radius: 16px; padding: 16px 18px 18px; }
+  .callhub-wire-head {
+    display: flex; align-items: center; gap: 9px; font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--sw-text-bright); margin-bottom: 12px;
+  }
+  .callhub-wire-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sw-magenta); box-shadow: 0 0 0 3px rgba(247,42,114,0.18); flex-shrink: 0; }
+  .callhub-wire-meta { color: var(--sw-text-dim); font-weight: 500; letter-spacing: 0.03em; text-transform: none; }
+
+  /* Secondary post-call review action */
+  .callhub-review { text-align: center; margin: 26px auto 0; max-width: 560px; }
+  #open-postprompt {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: transparent; color: var(--sw-text-bright);
+    border: 1px solid var(--sw-border); border-radius: 10px; padding: 11px 20px;
+    font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  #open-postprompt svg { width: 16px; height: 16px; color: var(--sw-blue); }
+  #open-postprompt:hover { border-color: var(--sw-blue); background: rgba(4,78,244,0.08); }
+  #open-postprompt:focus-visible { outline: 2px solid var(--sw-blue); outline-offset: 2px; }
+  .callhub-review-note { display: block; margin-top: 10px; font-size: 13px; color: var(--sw-text-dim); }
   .lw-feed-pane { background: #0b1220; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; min-height: 320px; max-height: 420px; display: flex; flex-direction: column; }
   .lw-head { padding: 10px 14px; font-weight: 700; letter-spacing: .05em; font-size: .8rem; }
   .lw-sub { opacity: .5; font-weight: 400; }
@@ -1177,24 +1443,30 @@
   /* Sticky timeline that follows the user down the journey */
   .timeline-sticky {
     position: sticky; top: 46px; z-index: 40;  /* clear the fixed API ticker (46px) */
-    padding: 14px 0 14px;
+    padding: 8px 0 8px;
     background: rgba(11,11,11,0.88);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--sw-border);
   }
-  .timeline-sticky-inner { max-width: 1080px; margin: 0 auto; }
+  /* One slim row: timeline left, compact number badge right (was two stacked
+     rows eating ~300px of every viewport). */
+  .timeline-sticky-inner {
+    max-width: 1080px; margin: 0 auto;
+    display: flex; align-items: center; gap: 24px;
+  }
+  .timeline-sticky-inner .timeline { flex: 1; }
 
-  /* Vertical stack of all seven step sections */
+  /* Vertical stack of all four step sections */
   .steps-stack {
-    display: flex; flex-direction: column; gap: 18px;
+    display: flex; flex-direction: column; gap: 14px;
     max-width: 1180px; margin: 28px auto 0; padding: 0 8px;
   }
 
   /* Each step section (full-width card, active vs muted) */
   .step-section {
     background: var(--sw-card); border: 1px solid var(--sw-border);
-    border-radius: 16px; padding: 26px 32px;
+    border-radius: 16px; padding: 18px 24px;
     opacity: 0.55; filter: saturate(0.7);
     transition: opacity 0.3s ease, filter 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, padding 0.3s ease;
     scroll-margin-top: 110px;
@@ -1215,7 +1487,7 @@
   .step-section.active .eyebrow { color: var(--sw-magenta); }
   .step-section h2 { font-size: 21px; color: var(--sw-text-bright); margin-top: 4px; font-weight: 700; letter-spacing: -0.01em; }
   .step-section.active h2 { font-size: 28px; margin-top: 6px; }
-  .step-section .desc { font-size: 15px; color: var(--sw-text); margin-top: 10px; line-height: 1.55; }
+  .step-section .desc { font-size: 14px; color: var(--sw-text); margin-top: 6px; line-height: 1.5; }
   .step-teaser { font-size: 13.5px; color: var(--sw-text-dim); margin-top: 6px; }
   .step-section.active .step-teaser { display: none; }
   .step-section:not(.active) .step-detail-body { display: none; }
@@ -1223,18 +1495,18 @@
   /* Big advance CTA pinned to bottom of the active section */
   .step-advance {
     display: flex; justify-content: space-between; align-items: center; gap: 12px;
-    margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--sw-border);
+    margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--sw-border);
     flex-wrap: wrap;
   }
   .step-advance .btn-primary { font-size: 14.5px; padding: 12px 20px; }
   .step-advance .btn-secondary { font-size: 13.5px; padding: 10px 16px; }
   .step-advance-done { font-size: 13.5px; color: var(--sw-text-dim); }
   .detail-grid {
-    margin-top: 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
   }
   .detail-tile {
     background: var(--sw-dark); border: 1px solid var(--sw-border);
-    border-radius: 10px; padding: 14px 16px;
+    border-radius: 10px; padding: 10px 14px;
   }
   .detail-tile .label {
     font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase;
@@ -1244,7 +1516,7 @@
   .pill { display: inline-block; font-size: 11px; padding: 3px 9px; border-radius: 10px;
     background: rgba(255,255,255,0.06); color: var(--sw-text); margin: 0 4px 4px 0; }
   .pill.new { background: rgba(247,42,114,0.15); color: var(--sw-magenta); }
-  .source-row { margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .source-row { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
   .src-btn {
     font-size: 12.5px; padding: 8px 14px; border-radius: 8px;
     border: 1px solid var(--sw-border); color: var(--sw-text-bright);
@@ -1494,19 +1766,9 @@
   .pp-kv td:first-child { color: #93c5fd; font-weight: 600; white-space: nowrap; width: 30%; }
   .pp-stateflow { padding: 8px 18px 16px; min-height: 48px; overflow-x: auto; }
   .pp-stateflow .mermaid { display: flex; justify-content: center; }
-  .postprompt-cta { max-width: 640px; margin: 32px auto; padding: 0 20px; text-align: center; }
-  .postprompt-cta .muted { margin-top: 10px; font-size: .9rem; opacity: .7; }
   .cta-btn { background: var(--sw-blue); color: #fff; border: 0; border-radius: 8px;
     padding: 6px 12px; cursor: pointer; font-weight: 600; }
-  /* Make the post-prompt reveal button big and ripple so attendees notice it. */
-  #open-postprompt { font-size: 1.15rem; padding: 16px 30px; border-radius: 12px;
-    font-weight: 700; position: relative; animation: pp-cta-pulse 2.2s ease-in-out infinite; }
-  @keyframes pp-cta-pulse {
-    0%   { box-shadow: 0 0 0 0 rgba(4, 78, 244, .55); }
-    70%  { box-shadow: 0 0 0 18px rgba(4, 78, 244, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(4, 78, 244, 0); }
-  }
-  @media (prefers-reduced-motion: reduce) { #open-postprompt { animation: none; } }
+  /* #open-postprompt is now a secondary "review" action; styled in the finale block above. */
 
   /* ---- Shared Dashboard + Timeline styles ---- */
   .m-section-title { font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
@@ -1530,6 +1792,181 @@
   .tl-lane-name { width:96px; font-size:.72rem; text-transform:uppercase; opacity:.7; flex:0 0 96px; }
   .tl-track { position:relative; height:20px; flex:1; background:rgba(255,255,255,.04); border-radius:4px; }
   .tl-seg { position:absolute; top:3px; height:14px; min-width:3px; border-radius:3px; background:var(--c,#888); }
+
+  /* ============ OUTBOUND CAPSTONE SCREEN ============ */
+  /* The outbound capstone is now the "Buddy calls you" direction card in the
+     finale section (.dir-card--outbound); its gating lives there. */
+
+  /* The matched "stage" area in each direction card: a 16:9 visual block so the
+     inbound avatar and the outbound code sandbox line up to the same height. */
+  .dir-stage {
+    position: relative; border-radius: 12px; overflow: hidden;
+    flex: 1 1 auto; min-height: 248px;
+    background: #0b1220; border: 1px solid rgba(255,255,255,.08);
+  }
+  .dir-avatar { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .dir-stage-label {
+    position: absolute; bottom: 10px; left: 12px;
+    background: rgba(14,14,24,0.82); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 6px; padding: 4px 10px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+    color: #6ea0ff; letter-spacing: 0.05em;
+  }
+  /* Code variant: the sandbox fills the stage and scrolls inside it. */
+  .dir-stage--code { background: #1e1e1f; border-color: rgba(255,255,255,.07); }
+  .dir-stage--code .capstone-sandbox { height: 100%; border: 0; border-radius: 0; background: transparent; }
+  .dir-stage--code .capstone-sb-pre { max-height: none; height: calc(100% - 39px); }
+
+  /* Lock overlay shown over the outbound sandbox until all four versions built. */
+  .dir-lock-overlay {
+    position: absolute; inset: 0; display: none;
+    align-items: center; justify-content: center; text-align: center; padding: 20px;
+    background: rgba(11,18,32,0.82); backdrop-filter: blur(2px);
+  }
+  .dir-card--outbound.is-locked .dir-lock-overlay { display: flex; }
+  .dir-lock-text {
+    font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 700;
+    letter-spacing: 0.04em; color: var(--sw-text-dim); max-width: 240px; line-height: 1.5;
+  }
+
+  /* Sandbox code panel */
+  .capstone-sandbox {
+    background: #1e1e1f; border: 1px solid rgba(255,255,255,.07);
+    border-radius: 12px; overflow: hidden; flex: 1;
+  }
+  .capstone-sb-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,.07);
+    background: #161617;
+  }
+  .capstone-sb-dot { width: 10px; height: 10px; border-radius: 50%; background: #3a3a40; flex-shrink: 0; }
+  .capstone-sb-lang {
+    font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
+    color: #73737e; margin-left: auto;
+  }
+  .capstone-sb-pre {
+    margin: 0; padding: 14px 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    line-height: 1.75; overflow-x: auto;
+    counter-reset: sbline;
+    white-space: pre;
+  }
+  .capstone-sb-line {
+    display: block; padding: 0 16px 0 0; white-space: pre;
+    counter-increment: sbline;
+  }
+  .capstone-sb-line::before {
+    content: counter(sbline); display: inline-block;
+    width: 36px; text-align: right; padding-right: 16px;
+    color: #444; font-size: 11.5px; user-select: none;
+    flex-shrink: 0;
+  }
+  /* Token classes (same semantics as .ac-code tokens) */
+  .capstone-sb-pre .tok-kw  { color: #7c9eff; }
+  .capstone-sb-pre .tok-str { color: #a8c8ff; }
+  .capstone-sb-pre .tok-com { color: #6e7681; font-style: italic; }
+  .capstone-sb-pre .tok-fn  { color: #7c9eff; }
+  .capstone-sb-pre .tok-num { color: #ff6da0; }
+  /* Inline editable fields embedded in code */
+  .capstone-field {
+    display: inline-block;
+    min-width: 120px; max-width: 320px;
+    background: rgba(247,42,114,0.10);
+    border: none; border-bottom: 1.5px solid rgba(247,42,114,0.55);
+    border-radius: 3px;
+    color: var(--sw-magenta, #F72A72);
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    padding: 1px 4px; margin: 0 1px;
+    outline: none;
+    vertical-align: baseline;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    white-space: nowrap;
+  }
+  .capstone-field:focus {
+    border-bottom-color: var(--sw-blue, #044EF4);
+    box-shadow: 0 2px 0 0 rgba(4,78,244,0.25);
+    background: rgba(4,78,244,0.10);
+    color: #a8c8ff;
+  }
+  .capstone-field::placeholder { color: rgba(247,42,114,0.45); }
+  .capstone-field-hint {
+    font-size: 11px; font-family: 'JetBrains Mono', monospace;
+    color: rgba(255,215,0,0.6); margin-left: 4px;
+  }
+
+  /* Place Call button (shares the blue dir-btn look) + status, in the card. */
+  .capstone-place-btn {
+    width: 100%; background: var(--sw-blue); color: #fff; border: none; border-radius: 10px;
+    padding: 13px 20px; font-size: 15px; font-weight: 700; font-family: inherit;
+    cursor: pointer; transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .capstone-place-btn:hover { background: #0a5bff; transform: translateY(-1px); }
+  .capstone-place-btn:disabled { background: var(--sw-card-2); color: var(--sw-text-dim); cursor: not-allowed; transform: none; }
+  .capstone-place-btn.is-placing { background: var(--sw-purple); color: #fff; }
+  .dir-connect-callout { margin-top: 12px; background: rgba(247,42,114,.08);
+    border: 1px solid rgba(247,42,114,.28); border-radius: 10px; padding: 13px 15px; }
+  .dir-connect-callout p { margin: 0 0 11px; font-size: 12.5px; color: #ff9ec2; line-height: 1.45; }
+  .dir-btn--fuchsia { background: var(--sw-magenta); }
+  .dir-btn--fuchsia:hover { background: #ff3d80; }
+  .dir-verify { margin-top: 12px; background: rgba(247,42,114,.08);
+    border: 1px solid rgba(247,42,114,.28); border-radius: 10px; padding: 13px 15px; }
+  .dir-verify-msg { margin: 0 0 11px; font-size: 12.5px; color: #ff9ec2; line-height: 1.45; }
+  .dir-verify-msg b { color: #ffd0e2; }
+  .dir-verify-code { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+  .dir-verify-code input { flex: 0 0 120px; background: var(--sw-dark); border: 1px solid var(--sw-border);
+    border-radius: 8px; padding: 9px 11px; font-family: 'JetBrains Mono', monospace; color: var(--sw-text); }
+  .dir-verify-redial { background: none; border: 0; color: var(--sw-text-dim); font-size: 12px; cursor: pointer; }
+  .dir-card--outbound.needs-account .dir-lock-overlay { display: none; }  /* build-lock overlay off when it's an account gate */
+  .capstone-status {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    padding: 8px 12px; border-radius: 6px; margin-top: 4px;
+    display: none;
+  }
+  .capstone-status.show { display: block; }
+  .capstone-status.ok {
+    background: rgba(4,78,244,0.12); border: 1px solid rgba(4,78,244,0.25);
+    color: #a8c8ff;
+  }
+  .capstone-status.err {
+    background: rgba(247,42,114,0.10); border: 1px solid rgba(247,42,114,0.25);
+    color: var(--sw-magenta, #F72A72);
+  }
+  .capstone-unverified-hint {
+    font-size: 12px; color: #ff9ec2;
+    background: rgba(247,42,114,0.08); border: 1px solid rgba(247,42,114,0.25);
+    border-radius: 6px; padding: 8px 12px; display: none; margin-top: 10px;
+  }
+  .capstone-unverified-hint.show { display: block; }
+  .capstone-status { margin-top: 10px; }
+
+  /* ============ CONNECT-ACCOUNT DRAWER ============ */
+  .connect-drawer-scrim { position: fixed; inset: 0; background: rgba(6,6,14,.6); z-index: 90; }
+  .connect-drawer { position: fixed; top: 0; right: 0; height: 100vh; width: min(400px, 92vw); z-index: 91;
+    background: var(--sw-card); border-left: 1px solid var(--sw-border); padding: 28px 26px;
+    display: flex; flex-direction: column; gap: 4px; overflow-y: auto;
+    transform: translateX(100%); transition: transform .22s ease; }
+  .connect-drawer:not([hidden]) { transform: translateX(0); }
+  @media (prefers-reduced-motion: reduce) { .connect-drawer { transition: none; } }
+  .cd-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--sw-magenta); margin-bottom: 6px; }
+  .connect-drawer h3 { font-size: 20px; color: var(--sw-text-bright); margin: 0 0 6px; }
+  .cd-sub { font-size: 13px; color: var(--sw-text-dim); margin: 0 0 18px; }
+  .cd-field { margin-bottom: 13px; }
+  .cd-field label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    letter-spacing: .05em; text-transform: uppercase; color: var(--sw-text-dim); margin-bottom: 6px; }
+  .cd-field input { width: 100%; background: var(--sw-dark); border: 1px solid var(--sw-border);
+    border-radius: 8px; padding: 10px 12px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px;
+    color: var(--sw-text); }
+  .cd-field input:focus { outline: 2px solid var(--sw-magenta); outline-offset: 1px; }
+  .cd-reassure { font-size: 11.5px; color: var(--sw-text-dim); margin: 6px 0 14px; line-height: 1.45; }
+  .cd-error { font-size: 12.5px; color: #ff9ec2; background: rgba(247,42,114,.08);
+    border: 1px solid rgba(247,42,114,.25); border-radius: 8px; padding: 9px 12px; margin-bottom: 12px; }
+  .cd-connect { background: var(--sw-magenta); color: #fff; border: 0; border-radius: 10px;
+    padding: 13px; font-weight: 700; font-size: 15px; cursor: pointer; }
+  .cd-connect:hover { filter: brightness(1.07); }
+  .cd-connect:disabled { opacity: .55; cursor: not-allowed; }
+  .cd-cancel { background: none; border: 0; color: var(--sw-text-dim); padding: 12px; margin-top: 6px;
+    cursor: pointer; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -1561,6 +1998,14 @@
     <a href="https://github.com/signalwire-demos/SignalWire-SDK-Workshop" target="_blank">GitHub</a>
     <a href="https://ai.signalwire.com/" target="_blank">SignalWire AI</a>
   </nav>
+  <div class="acct-chip-wrap">
+    <button class="acct-chip shared" id="acct-chip" type="button" aria-haspopup="true" aria-expanded="false">
+      <span class="acct-dot" aria-hidden="true"></span>
+      <span id="acct-chip-label">Workshop account</span>
+      <span class="acct-caret" aria-hidden="true">&#9662;</span>
+    </button>
+    <div class="acct-menu" id="acct-menu" hidden></div>
+  </div>
 </div>
 
 <!-- Post-prompt reveal modal — shows the data Buddy captured from the final call -->
@@ -1595,19 +2040,118 @@
   <p style="text-align:center;padding:120px 20px;color:var(--sw-text-dim);">Loading…</p>
 </main>
 
-<!-- Browser-call section — static so a re-render never destroys an active call widget -->
-<section class="cf-section" id="cf-section" hidden>
-  <div class="cf-head">
-    <div class="label">The whole platform, end to end</div>
-    <h2>Talk to Buddy from your browser, and watch the wire</h2>
-    <p>One call, three views: the click-to-call widget in front, RELAY + the Agents SDK behind it.</p>
+<!-- Connect-account drawer — static sibling so re-renders never destroy it -->
+<div class="connect-drawer-scrim" id="connect-scrim" hidden></div>
+<aside class="connect-drawer" id="connect-drawer" hidden aria-hidden="true" aria-label="Connect your SignalWire account">
+  <div class="cd-eyebrow">&#11044; Your account</div>
+  <h3>Connect to place the call</h3>
+  <p class="cd-sub">Used only for the outbound call and number verification. The build keeps running on the workshop account.</p>
+  <div class="cd-field"><label for="cd-project">Project ID</label><input id="cd-project" type="text" spellcheck="false" placeholder="xxxxxxxx-xxxx-..." /></div>
+  <div class="cd-field"><label for="cd-token">API token</label><input id="cd-token" type="password" spellcheck="false" placeholder="PT..." /></div>
+  <div class="cd-field"><label for="cd-space">Space</label><input id="cd-space" type="text" spellcheck="false" placeholder="your-space.signalwire.com" /></div>
+  <a href="https://signalwire.com/signup" target="_blank" rel="noopener noreferrer" id="cd-signup-invite" class="signup-invite compact">
+    <div class="signup-invite-text">
+      <div class="signup-invite-eyebrow">New to SignalWire?</div>
+      <div class="signup-invite-headline">Create your free Space</div>
+      <div class="signup-invite-sub">Free trial credits included, no card required.</div>
+    </div>
+    <div class="signup-invite-cta">Sign up free <span aria-hidden="true">→</span></div>
+  </a>
+  <p class="cd-reassure">Stays on the server, scoped to your session, never shared with other attendees.</p>
+  <div id="cd-error" class="cd-error" hidden></div>
+  <button class="cd-connect" id="cd-connect-btn" type="button">Connect account</button>
+  <button class="cd-cancel" id="cd-cancel-btn" type="button">Cancel</button>
+  <!-- Step 2 (after connect): pick a number on the attendee's own account, or
+       send them to buy one. Populated by showOwnNumberStep(). -->
+  <div id="cd-number-step" hidden></div>
+</aside>
+
+<!-- Finale section — static so a re-render never destroys an active call widget.
+     Two call directions (inbound browser call + outbound capstone), the Live Wire
+     feed, and a secondary "see what Buddy captured" review action. -->
+<section class="callhub" id="cf-section" hidden>
+  <div class="callhub-head">
+    <p class="callhub-eyebrow">Buddy is complete</p>
+    <h2 class="callhub-title">Put Buddy on a real call</h2>
+    <p class="callhub-sub">Two directions, one agent. Call him from your browser, or have him ring your phone, and watch the SDK work in real time.</p>
   </div>
 
-  <div class="lw-grid">
-    <div class="lw-call-pane">
-      <div id="c2c-widget-mount"><p class="muted">Loading the call widget…</p></div>
+  <div class="callhub-grid">
+    <!-- Inbound: you call Buddy (the click-to-call widget is the action) -->
+    <article class="dir-card dir-card--inbound">
+      <div class="dir-card-top">
+        <span class="dir-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 2 16 8 22 8"></polyline><line x1="23" y1="1" x2="16" y2="8"></line><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+        </span>
+        <span class="dir-tag">Inbound</span>
+      </div>
+      <h3 class="dir-title">You call Buddy</h3>
+      <p class="dir-desc">Dial Buddy straight from this page over WebRTC video. No phone, no number to type.</p>
+      <div class="dir-stage">
+        <video class="dir-avatar" autoplay loop muted playsinline
+               src="https://mcdn.signalwire.com/videos/robot_idle2.mp4"
+               aria-label="Buddy video avatar"></video>
+        <span class="dir-stage-label">Buddy · live video avatar</span>
+      </div>
+      <div class="dir-action" id="c2c-widget-mount"><p class="muted">Loading the call widget…</p></div>
+    </article>
+
+    <!-- Outbound: Buddy calls you. The dial code sandbox lives in the card; only
+         the destination is editable. Locked (overlay) until all four versions built. -->
+    <article class="dir-card dir-card--outbound" id="capstone-card">
+      <div class="dir-card-top">
+        <span class="dir-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 8 22 2 16 2"></polyline><line x1="16" y1="8" x2="23" y2="1"></line><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+        </span>
+        <span class="dir-tag">Outbound</span>
+      </div>
+      <h3 class="dir-title">Buddy calls you</h3>
+      <p class="dir-desc">Edit the destination below; Buddy rings your phone and waits for you to speak first.</p>
+      <div class="dir-stage dir-stage--code">
+        <div class="capstone-sandbox" id="capstone-sandbox"><!-- rendered by renderCapstoneSandbox() --></div>
+        <div class="dir-lock-overlay" aria-hidden="true">
+          <span class="dir-lock-text">Build all four versions of Buddy to unlock</span>
+        </div>
+      </div>
+      <div class="dir-connect-callout" id="capstone-connect" hidden>
+        <p><b>Log in with your SignalWire account to place outbound calls.</b> Buddy dials out on <b>your</b> account, not the workshop's shared one (a free trial works). Everything else in this workshop stays on us.</p>
+        <button class="dir-btn dir-btn--fuchsia" id="capstone-connect-btn" type="button">Log in with SignalWire</button>
+        <p class="signup-line">New to SignalWire? <a href="https://signalwire.com/signup" target="_blank" rel="noopener noreferrer">Create a free Space</a> · free trial credits, no card required.</p>
+      </div>
+      <div class="dir-verify" id="capstone-verify" hidden>
+        <p class="dir-verify-msg">Trial accounts can only call verified numbers. Verify <b id="capstone-verify-num">this number</b> to place the call.</p>
+        <div class="dir-verify-entry">
+          <button class="dir-btn dir-btn--fuchsia" id="capstone-verify-btn" type="button">Verify this number</button>
+        </div>
+        <div class="dir-verify-code" id="capstone-verify-code" hidden>
+          <input id="capstone-verify-input" type="text" inputmode="numeric" maxlength="6" placeholder="6-digit code" aria-label="Verification code" />
+          <button class="dir-btn dir-btn--fuchsia" id="capstone-verify-confirm" type="button">Confirm</button>
+          <button class="dir-verify-redial" id="capstone-verify-redial" type="button">Call me again</button>
+        </div>
+        <div id="capstone-verify-status" class="capstone-status"></div>
+      </div>
+      <div class="dir-action">
+        <button class="dir-btn" id="capstone-place-btn" type="button">Place call</button>
+        <div id="capstone-status" class="capstone-status"></div>
+        <div id="capstone-unverified-hint" class="capstone-unverified-hint">No verified number on file. Trial spaces can only call verified numbers, so verify yours first.</div>
+      </div>
+    </article>
+  </div>
+
+  <div class="callhub-wire">
+    <div class="callhub-wire-head">
+      <span class="callhub-wire-dot" aria-hidden="true"></span> Live Wire
+      <span class="callhub-wire-meta">every AI event, as it happens</span>
     </div>
     <div id="live-wire" class="lw-feed-pane"></div>
+  </div>
+
+  <div class="callhub-review">
+    <button id="open-postprompt" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      See what Buddy captured
+    </button>
+    <span class="callhub-review-note">After a call, review the summary and structured data Buddy pulled from it.</span>
   </div>
 </section>
 
@@ -1653,6 +2197,10 @@
       </div>
     </section>
 
+<!-- The outbound capstone (dial sandbox + Place Call) now lives inline in the
+     "Buddy calls you" direction card in #cf-section above; there is no separate
+     capstone screen anymore. -->
+
 <div class="footer" id="workshop-footer" hidden>
       Built with the <a href="https://signalwire.com/docs/server-sdks" target="_blank" rel="noopener noreferrer">SignalWire Agents SDK</a>
       · <a href="https://github.com/signalwire-demos/SignalWire-SDK-Workshop" target="_blank" rel="noopener noreferrer">github.com/signalwire-demos/SignalWire-SDK-Workshop</a>
@@ -1680,16 +2228,17 @@
 
 const STEPS_META = [
   {
-    route: "/step04",
+    route: "/hello",
     step: "Version 1",
-    name: "Hello Agent",
+    name: "Hello Buddy",
+    short: "Hello",
     callPrompt: "say hi. Buddy answers and introduces himself.",
     tagline: "Buddy comes online",
     codeSpotlight: {
       lang: "hello_agent.py",
       power: "A voice, a personality, a working phone agent.",
       fullCode: `"""
-Hello Agent
+Hello Buddy
 -----------
 The simplest possible agent - just enough to prove everything works.
 Call your number and have a basic conversation with Buddy.
@@ -1722,12 +2271,6 @@ class HelloAgent(AgentBase):
             "and have a brief pleasant conversation. "
             "Keep your responses short since this is a phone call.",
         )
-
-        # Carrier caller-ID names are location data, not names (an unlisted
-        # Arizona cell arrives as "ARIZONA") - shared guard so Buddy never
-        # addresses the caller by it.
-        from python.steps._caller_identity import add_caller_identity_guard
-        add_caller_identity_guard(self)
 
         # After each call, the AI generates a summary
         self.set_post_prompt(
@@ -1764,242 +2307,10 @@ class HelloAgent(AgentBase):
     prompts: ["How are you today?", "What can you help me with?", "Tell me about yourself"],
   },
   {
-    route: "/step06",
+    route: "/tool",
     step: "Version 2",
-    name: "Hardcoded Jokes",
-    callPrompt: "ask Buddy for a joke.",
-    tagline: "Buddy learns jokes",
-    codeSpotlight: {
-      lang: "hardcoded_jokes.py",
-      power: "Buddy reaches for a tool when the caller asks.",
-      fullCode: `"""
-Hardcoded Jokes
----------------
-Your first SWAIG function - teaching the AI to tell jokes
-from a hardcoded list.
-
-New concepts:
-  - FunctionResult: return data from a SWAIG function
-  - define_tool(): register a function the AI can call
-  - description: tells the AI *when* to use the function (critical!)
-  - parameters: what info the AI extracts from conversation
-  - function_fillers: phrases spoken while your function runs
-"""
-
-import random
-from signalwire_agents import AgentBase, SwaigFunctionResult as FunctionResult
-
-
-JOKES = [
-    "Why do programmers prefer dark mode? Because light attracts bugs.",
-    "I told my wife she was drawing her eyebrows too high. She looked surprised.",
-    "What do you call a fake noodle? An impasta.",
-    "Why don't scientists trust atoms? Because they make up everything.",
-    "I'm reading a book about anti-gravity. It's impossible to put down.",
-    "What did the ocean say to the beach? Nothing, it just waved.",
-    "Why did the scarecrow win an award? He was outstanding in his field.",
-    "I used to hate facial hair, but then it grew on me.",
-]
-
-
-class JokeAgent(AgentBase):
-    def __init__(self, route="/"):
-        super().__init__(name="joke-agent-hardcoded", route=route)
-
-        self.add_language(
-            "English", "en-US", "rime.spore",
-            speech_fillers=["Um", "Well"],
-            function_fillers=["Let me think of a good one..."],
-        )
-
-        self.prompt_add_section(
-            "Role",
-            "You are a friendly assistant named Buddy. "
-            "You love telling jokes and making people laugh. "
-            "Keep your responses short since this is a phone call.",
-        )
-
-        self.prompt_add_section(
-            "Guidelines",
-            body="Follow these guidelines:",
-            bullets=[
-                "When someone asks for a joke, use the tell_joke function",
-                "After telling a joke, pause for a reaction before offering another",
-                "Be enthusiastic and have fun with it",
-            ],
-        )
-
-        # Carrier caller-ID names are location data, not names ("ARIZONA") -
-        # shared guard so Buddy never addresses the caller by it.
-        from python.steps._caller_identity import add_caller_identity_guard
-        add_caller_identity_guard(self)
-
-        # The AI decides when to call this based on the description
-        self.define_tool(
-            name="tell_joke",
-            description=(
-                "Tell the caller a funny joke. Use this whenever "
-                "someone asks for a joke or humor."
-            ),
-            parameters={"type": "object", "properties": {}},
-            handler=self.on_tell_joke,
-        )
-
-        self.set_post_prompt(
-            "Summarize this conversation in 2-3 sentences. "
-            "Note which jokes were told and how the caller reacted.",
-        )
-
-        from python.steps._postprompt_params import CAPTURE_PARAMS
-        self.set_params({**CAPTURE_PARAMS})
-
-    def on_tell_joke(self, args, raw_data):
-        joke = random.choice(JOKES)
-        return FunctionResult(f"Here's a joke: {joke}")
-
-    def on_summary(self, summary, raw_data):
-        from python.steps._summary_capture import record_call
-        record_call(self, raw_data)
-`,
-      callouts: [
-        { id: 1, anchor: "self.define_tool(", title: "define_tool()", body: "Registers a function the AI can choose to call." },
-        { id: 2, anchor: "description=(", title: "description", body: "Tells the AI when to call it. This is the critical part." },
-        { id: 3, anchor: "def on_tell_joke", title: "on_tell_joke()", body: "Your Python runs and returns what Buddy says." },
-      ],
-      buddy: "The description is how I know when to reach for a tool.",
-    },
-    stem: "step06_hardcoded_jokes",
-    desc: "Buddy's first tool. The handler returns a random joke from a hardcoded list.",
-    whatsNew: "First SWAIG function: define_tool() with a custom handler that returns FunctionResult",
-    capabilities: ["Chat", "Jokes (list)"],
-    newCapabilities: ["Jokes (list)"],
-    concepts: ["define_tool()", "FunctionResult", "SWAIG functions"],
-    requiredKeys: [],
-    docs: [
-      { label: "What is SWAIG?", url: "/server-sdks/guides/swaig" },
-      { label: "Defining functions", url: "/server-sdks/guides/defining-functions" },
-      { label: "Function results", url: "/server-sdks/guides/result-actions" },
-    ],
-    prompts: ["Tell me a joke", "Got another one?", "That was terrible, give me a better one"],
-  },
-  {
-    route: "/step07",
-    step: "Version 3",
-    name: "Live API Jokes",
-    callPrompt: "ask Buddy for a joke. This version fetches a fresh one every time.",
-    tagline: "Buddy calls a live API",
-    codeSpotlight: {
-      lang: "api_jokes.py",
-      power: "The same tool, now backed by a live API.",
-      fullCode: `"""
-Live API Jokes
---------------
-Replace hardcoded jokes with fresh ones from icanhazdadjoke.com.
-Every call returns a different joke.
-
-New concepts:
-  - Calling external APIs from a SWAIG function handler
-  - Graceful error handling when APIs fail
-"""
-
-import requests
-from signalwire_agents import AgentBase, SwaigFunctionResult as FunctionResult
-
-
-class JokeAgent(AgentBase):
-    def __init__(self, route="/"):
-        super().__init__(name="joke-agent-api", route=route)
-
-        self.add_language(
-            "English", "en-US", "rime.spore",
-            speech_fillers=["Um", "Well"],
-            function_fillers=["Let me think of a good one..."],
-        )
-
-        self.prompt_add_section(
-            "Role",
-            "You are a friendly assistant named Buddy. "
-            "You love telling jokes and making people laugh. "
-            "Keep your responses short since this is a phone call.",
-        )
-
-        self.prompt_add_section(
-            "Guidelines",
-            body="Follow these guidelines:",
-            bullets=[
-                "When someone asks for a joke, use the tell_joke function",
-                "After telling a joke, pause for a reaction before offering another",
-                "Be enthusiastic and have fun with it",
-            ],
-        )
-
-        # Carrier caller-ID names are location data, not names ("ARIZONA") -
-        # shared guard so Buddy never addresses the caller by it.
-        from python.steps._caller_identity import add_caller_identity_guard
-        add_caller_identity_guard(self)
-
-        self.define_tool(
-            name="tell_joke",
-            description=(
-                "Tell the caller a funny dad joke. Use this whenever "
-                "someone asks for a joke, humor, or to be entertained."
-            ),
-            parameters={"type": "object", "properties": {}},
-            handler=self.on_tell_joke,
-        )
-
-        self.set_post_prompt(
-            "Summarize this conversation in 2-3 sentences. "
-            "Note which jokes were told and how the caller reacted.",
-        )
-
-        from python.steps._postprompt_params import CAPTURE_PARAMS
-        self.set_params({**CAPTURE_PARAMS})
-
-    def on_tell_joke(self, args, raw_data):
-        # WHY: removes the API Ninjas key dependency so attendees skip a prereq.
-        try:
-            resp = requests.get(
-                "https://icanhazdadjoke.com/",
-                headers={"Accept": "application/json", "User-Agent": "signalwire-agents-sdk-workshop"},
-                timeout=5,
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            joke = data.get("joke")
-            if not joke:
-                return FunctionResult("I couldn't find a joke this time. Try again!")
-            return FunctionResult(f"Here's a dad joke: {joke}")
-        except requests.RequestException:
-            return FunctionResult("My joke service is taking a break. Try again in a moment!")
-
-    def on_summary(self, summary, raw_data):
-        from python.steps._summary_capture import record_call
-        record_call(self, raw_data)
-`,
-      callouts: [
-        { id: 1, anchor: "requests.get(", title: "Call any API", body: "Same function as before, now fetching a fresh joke live." },
-        { id: 2, anchor: "except requests.RequestException", title: "Graceful fallback", body: "If the API fails, Buddy says a friendly line instead of breaking." },
-      ],
-      buddy: "Same tool, real data. The caller hears a new joke every time.",
-    },
-    stem: "step07_api_jokes",
-    desc: "Same tool, but the handler now fetches a fresh joke from a live API.",
-    whatsNew: "Calling an external REST API from a custom function handler",
-    capabilities: ["Chat", "Jokes (API)"],
-    newCapabilities: ["Jokes (API)"],
-    concepts: ["External API calls", "Error handling", "Keyless API (icanhazdadjoke)"],
-    requiredKeys: [],
-    docs: [
-      { label: "Function parameters", url: "/server-sdks/guides/parameters" },
-      { label: "Defining functions", url: "/server-sdks/guides/defining-functions" },
-    ],
-    prompts: ["Tell me a dad joke", "Give me another", "One more!"],
-  },
-  {
-    route: "/step08",
-    step: "Version 4",
-    name: "Weather + Jokes",
+    name: "Buddy Gets a Tool",
+    short: "Tools",
     callPrompt: "ask Buddy for the weather in your city.",
     tagline: "Buddy checks the weather",
     codeSpotlight: {
@@ -2123,8 +2434,8 @@ class WeatherJokeAgent(AgentBase):
       buddy: "Give me tools and I decide which one each request needs.",
     },
     stem: "step08_weather",
-    desc: "Adds live weather: Buddy's first parameterized tool (the AI extracts the city), backed by keyless Open-Meteo.",
-    whatsNew: "Tool parameters: the AI extracts the city from conversation and passes it to your handler. The step file also explains DataMap, the serverless alternative.",
+    desc: "Adds live weather: Buddy's first parameterized tool (the Agent extracts the city), backed by keyless Open-Meteo.",
+    whatsNew: "Tool parameters: the Agent extracts the city from conversation and passes it to your handler. The step file also explains DataMap, the serverless alternative.",
     capabilities: ["Chat", "Jokes (API)", "Weather"],
     newCapabilities: ["Weather"],
     concepts: ["Tool parameters", "Open-Meteo (keyless)", "DataMap vs define_tool"],
@@ -2137,179 +2448,10 @@ class WeatherJokeAgent(AgentBase):
     prompts: ["What's the weather in Tokyo?", "How about Paris?", "Now tell me a joke"],
   },
   {
-    route: "/step09",
-    step: "Version 5",
-    name: "Polished Agent",
-    callPrompt: "ask for a joke, then the weather. Notice the smoother replies.",
-    tagline: "Buddy gets polished",
-    codeSpotlight: {
-      lang: "polished_agent.py",
-      power: "Same skills, a far more natural conversation.",
-      fullCode: `"""
-Polish and Personality
-----------------------
-Same capabilities (weather + jokes), but with a much better
-conversation experience. Personality, timing, speech hints.
-
-New concepts:
-  - set_params(): tune conversation timing (speech timeout, attention timeout)
-  - add_hints(): help the speech recognizer with tricky words
-  - Richer prompts: personality, voice style, capabilities sections
-  - Multiple fillers per function for variety
-"""
-
-import requests
-from signalwire_agents import AgentBase, SwaigFunctionResult as FunctionResult
-
-
-class PolishedAgent(AgentBase):
-    def __init__(self, route="/"):
-        super().__init__(name="polished-agent", route=route)
-
-        # More fillers = more variety = more natural
-        self.add_language(
-            "English", "en-US", "rime.spore",
-            speech_fillers=["Um", "Well", "So"],
-            function_fillers=[
-                "Let me check on that for you...",
-                "One moment while I look that up...",
-                "Hang on just a sec...",
-            ],
-        )
-
-        # Timing parameters for natural conversation
-        from python.steps._postprompt_params import CAPTURE_PARAMS
-        self.set_params({
-            "end_of_speech_timeout": 600,     # 600ms pause before responding
-            "attention_timeout": 15000,        # Re-engage after 15s silence
-            "attention_timeout_prompt":
-                "Are you still there? I can help with weather, jokes, or math!",
-            **CAPTURE_PARAMS,
-        })
-
-        # Help speech recognizer with tricky words
-        self.add_hints(["Buddy", "weather", "joke", "temperature", "forecast"])
-
-        # Richer, structured personality
-        self.prompt_add_section(
-            "Personality",
-            "You are Buddy, a cheerful and witty AI phone assistant. "
-            "You have a warm, upbeat personality and you genuinely enjoy "
-            "helping people. You're a bit of a dad joke enthusiast. "
-            "Think of yourself as that friendly neighbor who always "
-            "has a joke ready and knows what the weather is like.",
-        )
-
-        self.prompt_add_section(
-            "Voice Style",
-            body="Since this is a phone conversation, follow these rules:",
-            bullets=[
-                "Keep responses to 1-2 sentences when possible",
-                "Use conversational language, not formal or robotic",
-                "React to what the caller says before jumping to information",
-                "If they laugh at a joke, acknowledge it warmly",
-                "Use natural transitions between topics",
-            ],
-        )
-
-        self.prompt_add_section(
-            "Capabilities",
-            body="You can help with the following:",
-            bullets=[
-                "Weather: current conditions for any city worldwide",
-                "Jokes: endless supply of dad jokes, always fresh",
-                "General chat: friendly conversation on any topic",
-            ],
-        )
-
-        # Carrier caller-ID names are location data, not names ("ARIZONA") -
-        # shared guard so Buddy never addresses the caller by it.
-        from python.steps._caller_identity import add_caller_identity_guard
-        add_caller_identity_guard(self)
-
-        self._register_joke_function()
-        self._register_weather()
-
-        self.set_post_prompt(
-            "Summarize this conversation in 2-3 sentences. "
-            "Note what the caller asked about (weather, jokes, etc.) "
-            "and how the interaction went.",
-        )
-
-    # -- Dad jokes ---------------------------------------------------------
-
-    def _register_joke_function(self):
-        self.define_tool(
-            name="tell_joke",
-            description=(
-                "Tell the caller a funny dad joke. Use this whenever "
-                "someone asks for a joke or humor."
-            ),
-            parameters={"type": "object", "properties": {}},
-            handler=self.on_tell_joke,
-            fillers={
-                "en-US": [
-                    "Let me think of a good one...",
-                    "Oh, I've got one for you...",
-                    "Here comes a good one...",
-                ],
-            },
-        )
-
-    def on_tell_joke(self, args, raw_data):
-        # WHY: removes the API Ninjas key dependency so attendees skip a prereq.
-        try:
-            resp = requests.get(
-                "https://icanhazdadjoke.com/",
-                headers={"Accept": "application/json", "User-Agent": "signalwire-agents-sdk-workshop"},
-                timeout=5,
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            joke = data.get("joke")
-            if not joke:
-                return FunctionResult("I couldn't find a joke this time. Try again!")
-            return FunctionResult(f"Here's a dad joke: {joke}")
-        except requests.RequestException:
-            return FunctionResult("My joke service is taking a break. Try again in a moment!")
-
-    # -- Weather (server-side SWAIG tool, runs on our server) ----------------
-
-    def _register_weather(self):
-        # Server-side define_tool, NOT a serverless DataMap: a real workshop call
-        # proved SignalWire's DataMap engine left every \${...} empty for this
-        # function. Fetching + formatting here is deterministic. See _weather.py.
-        from python.steps._weather import register_weather_tool
-        register_weather_tool(self)
-
-    def on_summary(self, summary, raw_data):
-        from python.steps._summary_capture import record_call
-        record_call(self, raw_data)
-`,
-      callouts: [
-        { id: 1, anchor: "self.set_params(", title: "set_params()", body: "Dial in how fast Buddy replies and when he re-engages." },
-        { id: 2, anchor: "self.add_hints(", title: "add_hints()", body: "Bias speech recognition toward words it might mishear." },
-      ],
-      buddy: "Same abilities as before. Now the timing feels human.",
-    },
-    stem: "step09_polish",
-    desc: "Same capabilities, better conversation: tuned timing, personality, and speech recognition.",
-    whatsNew: "UX tuning: set_params() for timing, add_hints() for speech recognition, richer prompts, varied fillers",
-    capabilities: ["Chat", "Jokes (API)", "Weather"],
-    newCapabilities: [],
-    concepts: ["set_params()", "add_hints()", "end_of_speech_timeout", "attention_timeout"],
-    requiredKeys: [],
-    docs: [
-      { label: "AI parameters", url: "/server-sdks/guides/ai-parameters" },
-      { label: "Hints", url: "/server-sdks/guides/hints" },
-      { label: "Best practices", url: "/platform/ai/best-practices" },
-    ],
-    prompts: ["What's the weather in London?", "Tell me a joke", "Are you still there?"],
-  },
-  {
-    route: "/step10",
-    step: "Version 6",
-    name: "Agent with Skills",
+    route: "/skills",
+    step: "Version 3",
+    name: "Buddy Gets Skills",
+    short: "Skills",
     callPrompt: "ask Buddy the time in Tokyo, then for an 18% tip on $47.50.",
     tagline: "Buddy gains skills",
     codeSpotlight: {
@@ -2487,9 +2629,10 @@ class SkillsAgent(AgentBase):
     prompts: ["What time is it in Tokyo?", "What's an 18% tip on $47.50?", "What's the weather in Miami?"],
   },
   {
-    route: "/step11",
-    step: "Version 7",
-    name: "Complete Agent",
+    route: "/complete",
+    step: "Version 4",
+    name: "Complete Buddy",
+    short: "Complete",
     callPrompt: "ask Buddy for the weather and a dad joke. The full agent.",
     tagline: "Buddy goes production-ready",
     codeSpotlight: {
@@ -2870,6 +3013,19 @@ async function swApi(method, path, body, opts = {}) {
     let data = null;
     try { data = await resp.json(); } catch (_) { /* non-json */ }
     const ms = Math.round(performance.now() - startMs);
+    // Central handling for the own-account gate: any endpoint can 400 with
+    // {needs_own_account:true} (stale session, mode change). Route the user to
+    // the connect drawer instead of leaving raw error text in a corner.
+    // No-op while the drawer is already open: a desynced session (server lost
+    // the creds but has_own is cached true) would otherwise loop drawer-open ->
+    // /api/own/numbers 400 -> drawer-open; when open, the drawer's own error
+    // UI handles the failure.
+    const _cdOpen = (() => { const d = document.getElementById("connect-drawer"); return d && !d.hidden; })();
+    if (resp.status === 400 && data && data.needs_own_account === true && !_cdOpen) {
+      if (window.updateCapstoneGate) window.updateCapstoneGate();
+      if (window.openConnectDrawer) window.openConnectDrawer();
+      if (typeof showToast === "function") showToast("Connect your SignalWire account to do this.", "err");
+    }
     apiBus.emit({
       id, kind: "end", method, path,
       status: resp.status, ok: resp.ok, ms,
@@ -3219,13 +3375,14 @@ const apiTheater = (() => {
 /* =========================================================================
  *  Step-unlock celebrations
  * ========================================================================= */
-const PALETTE = ["#044EF4", "#F72A72", "#40E0D0", "#FFD700", "#601BE6"];
+const PALETTE = ["#044EF4", "#F72A72", "#601BE6", "#6ea0ff"];  // primary family: blue, fuchsia, purple, light-blue
 
 function celebrateUnlock(route) {
   const meta = (typeof STEPS_META !== "undefined") ? STEPS_META.find(s => s.route === route) : null;
   if (!meta) return;
   showUnlockToast(meta);
-  burstConfetti(route);
+  // Confetti is reserved for the very end (the grand-finale resources screen);
+  // step unlocks get only the quiet toast + pulse, no burst.
   pulseActiveStep();
 }
 
@@ -3238,20 +3395,11 @@ function showUnlockToast(meta) {
     document.body.appendChild(el);
   }
   el.innerHTML = `
-    <span class="toast-unlock-icon">🎉</span>
-    <span><strong>${meta.step}</strong> · ${escapeHtml(meta.name)}<span class="toast-unlock-sub">unlocked</span></span>`;
+    <span class="toast-unlock-step">${escapeHtml(meta.step)}</span>
+    <span class="toast-unlock-name">${escapeHtml(meta.name)}</span>`;
   requestAnimationFrame(() => el.classList.add("is-visible"));
   clearTimeout(showUnlockToast._t);
-  showUnlockToast._t = setTimeout(() => el.classList.remove("is-visible"), 2600);
-}
-
-function burstConfetti(route) {
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const node = document.querySelector(`.timeline-node[data-route="${route}"]`)
-    || document.querySelector(".step-section.active");
-  if (!node) return;
-  const rect = node.getBoundingClientRect();
-  burstConfettiAt(rect.left + rect.width / 2, rect.top + rect.height / 2, 16);
+  showUnlockToast._t = setTimeout(() => el.classList.remove("is-visible"), 2200);
 }
 
 // Shared confetti emitter — bursts N particles from a viewport point (cx, cy).
@@ -3413,8 +3561,18 @@ async function loadConfig() {
       if (cfg.auth_pass) authPass = cfg.auth_pass;
     }
   } catch (e) { /* keep defaults */ }
-  // Hydrate real credential status so the gate (renderAll) can decide between
-  // the dashboard and the login wizard. Fail closed: any error => not configured.
+  // Hydrate account context FIRST so window._account is set before renderAll
+  // runs — the shared-mode invariant (number wizard unreachable) and the
+  // account chip both read it.
+  try {
+    const acctR = await swApi("GET", "/api/account", undefined, { label: "account context" });
+    const acct = (acctR && acctR.data) || {};
+    window._account = acct;
+  } catch (e) { /* fall through; window._account stays undefined */ }
+  // Hydrate real credential status. No longer a renderAll gate (the landing
+  // owns first-render routing); still read by the connect drawer / account
+  // chip to reflect whether server-side creds are configured. Fail closed:
+  // any error => not configured.
   try {
     const cr = await fetch("/api/credentials/status");
     state.credsConfigured = cr.ok ? !!(await cr.json()).configured : false;
@@ -3432,6 +3590,9 @@ async function loadConfig() {
     }
   }
   renderAll();
+  bootAccountChip();
+  bootConnectDrawer();
+  fetchAgentNumbers();
 }
 
 function getBaseUrl() { return window.location.origin; }
@@ -3463,15 +3624,37 @@ const state = {
   onboardingComplete: localStorage.getItem("sdkworkshop.onboardingComplete") === "1",
   milestone: Math.min(3, Math.max(1, parseInt(localStorage.getItem("sdkworkshop.milestone") || "1", 10) || 1)),
   visited: JSON.parse(localStorage.getItem("sdkworkshop.visited") || "[]"),
-  activeStep: localStorage.getItem("sdkworkshop.activeStep") || "/step04",
+  activeStep: localStorage.getItem("sdkworkshop.activeStep") || "/hello",
   credsConfigured: false,  // hydrated from /api/credentials/status at boot
+  // Verified number is deliberately NOT hydrated from localStorage: a persisted
+  // value would pre-fill the dial code with one attendee's number for the next
+  // person on the same browser (a cross-user leak) and read like a hard-coded
+  // default. It is populated only after the current user verifies their own
+  // number this session. Purge any legacy stored value on boot.
+  verifiedNumber: null,
 };
+try { localStorage.removeItem("sdkworkshop.verifiedNumber"); } catch (e) {}
+// Guard against a stale activeStep from a returning browser (the guided routes
+// were renamed from /stepNN to semantic slugs): fall back to the first step if
+// the stored route no longer exists.
+if (!STEPS_META.some(s => s.route === state.activeStep)) {
+  state.activeStep = STEPS_META[0].route;
+}
+// Drop any visited routes that no longer exist (e.g. old /stepNN from a
+// returning browser) so the progress counter never reads "7 of 4".
+{
+  const _valid = new Set(STEPS_META.map(s => s.route));
+  if (Array.isArray(state.visited)) {
+    state.visited = state.visited.filter(r => _valid.has(r));
+  }
+}
 
 function persist() {
   localStorage.setItem("sdkworkshop.onboardingComplete", state.onboardingComplete ? "1" : "0");
   localStorage.setItem("sdkworkshop.milestone", String(state.milestone));
   localStorage.setItem("sdkworkshop.visited", JSON.stringify(state.visited));
   localStorage.setItem("sdkworkshop.activeStep", state.activeStep);
+  // verifiedNumber is intentionally session-only (see state init) -- never persisted.
 }
 
 function resetState() {
@@ -3479,7 +3662,126 @@ function resetState() {
   localStorage.removeItem("sdkworkshop.milestone");
   localStorage.removeItem("sdkworkshop.visited");
   localStorage.removeItem("sdkworkshop.activeStep");
+  localStorage.removeItem("sdkworkshop.verifiedNumber");
   location.reload();
+}
+
+/* Runtime state shared by the inline outbound verify callout. */
+const verify = {
+  callId: null,      // id returned by /api/verify/start — needed for confirm + redial
+};
+
+/* =========================================================================
+ *  Outbound verify callout -- shown inside #capstone-card only when
+ *  GET /api/verify/needed returns needed:true (own-account trial mode).
+ * ========================================================================= */
+
+/** Check whether the current destination needs verification and show/hide
+ *  #capstone-verify accordingly. Disables Place Call when needed. */
+async function refreshOutboundVerify() {
+  const card = document.getElementById("capstone-card");
+  const cv = document.getElementById("capstone-verify");
+  const toEl = document.getElementById("capstone-to");
+  const placeBtn = document.getElementById("capstone-place-btn");
+  if (!card || !cv || !toEl) return;
+  const a = window._account || {};
+  // Only relevant on an own account in the ready (built, connected) state.
+  if (!(a.has_own === true)) { cv.hidden = true; return; }
+  // Auto-populate the destination with a verified number from the user's space
+  // (once, while the field is empty) so they don't have to retype it.
+  if (!toEl.value.trim() && !toEl.dataset.prefilled) {
+    toEl.dataset.prefilled = "1";
+    try {
+      const vs = await swApi("GET", "/api/verify/status", undefined, { label: "list verified numbers" });
+      const nums = (vs && vs.data && vs.data.numbers) || [];
+      const first = nums.find(n => n.verified);
+      if (first && first.number && !toEl.value.trim()) {
+        toEl.value = first.number;
+        state.verifiedNumber = first.number;
+      }
+    } catch (e) { /* non-fatal */ }
+  }
+  const to = (toEl.value || "").trim();
+  const r = await swApi("GET", "/api/verify/needed?to=" + encodeURIComponent(to), undefined, { label: "check verification needed" });
+  const needed = !!(r && r.data && r.data.needed);
+  cv.hidden = !needed;
+  const numEl = document.getElementById("capstone-verify-num");
+  if (numEl) numEl.textContent = to || "this number";
+  if (placeBtn) placeBtn.disabled = needed;   // block Place Call until verified
+}
+
+/* ---- Landing: the first screen for every mode. Start first; login is a
+   quiet option here and a contextual ask later (outbound / solo calls). ---- */
+function renderLanding() {
+  const app = document.getElementById("app");
+  app.innerHTML = `
+    <section class="hero landing-hero-bg">
+      <div class="hero-inner landing-hero">
+        <div style="text-align:center;"><div class="hero-eyebrow">SignalWire Agents SDK Workshop · 60 minutes</div></div>
+        <div class="landing-avatar-wrap" aria-hidden="true">
+          <div class="landing-avatar-ring"></div>
+          <video class="landing-avatar" autoplay loop muted playsinline
+                 poster="/static/buddy-avatar-poster.jpg"
+                 src="https://mcdn.signalwire.com/videos/robot_idle2.mp4"></video>
+        </div>
+        <h1>Meet <span class="accent">Buddy</span>.</h1>
+        <div class="buddy-bubble" role="note">
+          <span class="bb-icon" aria-hidden="true">💬</span>
+          <p>Hi, I'm Buddy. In the next hour you'll rebuild me from scratch: four versions, each with one new capability. At the end, I'll call you.</p>
+        </div>
+        <div class="landing-cta-row">
+          <button class="btn-start btn-cta-lg" id="start-workshop-btn">Start the workshop →</button>
+        </div>
+        <p class="landing-defer">
+          No account needed to build. Buddy calls <strong>you</strong> at the end; that part runs on your own SignalWire Space.
+          <span class="landing-auth-links">
+            <a href="#" id="landing-login-link">Log in</a>
+            <span aria-hidden="true">·</span>
+            <a href="https://signalwire.com/signup" target="_blank" rel="noopener noreferrer">Create a free Space →</a>
+          </span>
+        </p>
+      </div>
+    </section>
+    ${renderLockedPreviews()}
+  `;
+  document.getElementById("start-workshop-btn")?.addEventListener("click", startWorkshop);
+  document.getElementById("landing-login-link")?.addEventListener("click", e => {
+    e.preventDefault();
+    if (window.openConnectDrawer) window.openConnectDrawer();
+  });
+  // Videos injected via innerHTML don't always begin fetching on their own
+  // (readyState stays 0); kick the load + muted autoplay explicitly.
+  const avatarVideo = document.querySelector(".landing-avatar");
+  if (avatarVideo) { avatarVideo.load(); avatarVideo.play().catch(() => {}); }
+  // renderLockedPreviews ships a reset-progress-link in its footer markup;
+  // keep it functional on the landing exactly as renderOnboarding wires it.
+  document.getElementById("reset-progress-link")?.addEventListener("click", e => {
+    e.preventDefault();
+    resetState();
+  });
+  /* Hide the static workshop-only siblings when not in workshop state
+     (same block as renderOnboarding — a mid-workshop restart must not leave
+     the call hub / finale / footer visible under the landing). */
+  var cfSec = document.getElementById("cf-section");
+  if (cfSec) cfSec.hidden = true;
+  var wfSec = document.getElementById("workshop-footer");
+  if (wfSec) wfSec.hidden = true;
+  var gfSec = document.getElementById("grand-finale");
+  if (gfSec) {
+    gfSec.hidden = true;
+    gfSec.setAttribute("aria-hidden", "true");
+    gfSec.classList.remove("is-revealed");
+  }
+  finaleShown = false;
+}
+
+function startWorkshop() {
+  state.onboardingComplete = true;
+  persist();
+  // Enter at Version 1: setActiveStep marks it visited, re-renders (running
+  // the router with onboardingComplete now true), scrolls, and fires the
+  // first-visit celebration — same pattern as completeOnboarding.
+  setActiveStep("/hello");
 }
 
 /* ---- Onboarding render ---- */
@@ -3489,21 +3791,19 @@ function renderOnboarding() {
     <section class="hero">
       <div class="hero-inner">
         <div style="text-align:center;"><div class="hero-eyebrow">SignalWire Agents SDK Workshop · 60 minutes</div></div>
-        <h1>SignalWire <span class="accent">AI Workshop</span></h1>
-        <p class="hero-sub">Setup for this Workshop is as easy as 1,2,3 Log in. Get a number. Call your AI Agent</p>
-        ${renderMilestones()}
+        <h1>Connect a <span class="accent">number</span>.</h1>
+        <p class="hero-sub">Pick or buy a number on your Space. Buddy answers it, and it follows whichever version you select.</p>
         <div id="wizard-card-host">${renderWizardCard()}</div>
         <div class="skip-link">
-          Already comfortable with SignalWire?
-          <a href="#" id="skip-wizard-link">Skip the wizard and show me all 7 agents</a>
+          <a href="#" id="back-to-workshop-link">← Back to the workshop</a>
         </div>
       </div>
     </section>
-    ${renderLockedPreviews()}
   `;
-  document.getElementById("skip-wizard-link").addEventListener("click", e => {
+  document.getElementById("back-to-workshop-link")?.addEventListener("click", e => {
     e.preventDefault();
-    completeOnboarding();
+    wizard.gettingNumber = false;
+    renderAll();
   });
   document.getElementById("reset-progress-link")?.addEventListener("click", e => {
     e.preventDefault();
@@ -3538,8 +3838,7 @@ const wizard = {
   pending: false,       // request in-flight (disables buttons)
   errorMsg: "",
   setup: null,          // configured phone number after /api/setup/select
-  editingCreds: false,  // true when the user explicitly clicked "Back to credentials"
-                        // so the gate in renderAll() lets them reach step 1 again.
+  gettingNumber: false,   // transient: solo post-login number flow; never persisted
 };
 
 function renderMilestones() {
@@ -3597,7 +3896,7 @@ function renderMilestoneCreds() {
           <input type="text" id="wiz-project" autocomplete="off" spellcheck="false" placeholder="PXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" />
         </label>
         <label>API Token
-          <input type="text" id="wiz-token" autocomplete="off" spellcheck="false" placeholder="PTxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" />
+          <input type="password" id="wiz-token" autocomplete="off" spellcheck="false" placeholder="PTxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" />
         </label>
         <label>Space URL
           <input type="text" id="wiz-space" autocomplete="off" placeholder="your-space.signalwire.com" />
@@ -3624,7 +3923,7 @@ function renderMilestoneNumber() {
     body = `<p class="loading-row"><span class="loading-spinner"></span> Looking on your project ${sdkBadge("SDK · client.phone_numbers.list")}…</p>`;
   } else if (existing && existing.length > 0) {
     body = `
-      <p class="lead">Found ${existing.length} number${existing.length === 1 ? '' : 's'} already on your project. Pick one and we'll point it at <strong>Version 1 · Hello Agent</strong>. ${sdkBadge("SDK · client.fabric.resources.assign_phone_route")}</p>
+      <p class="lead">Found ${existing.length} number${existing.length === 1 ? '' : 's'} already on your project. Pick one and we'll point it at <strong>Version 1 · Hello Buddy</strong>. ${sdkBadge("SDK · client.fabric.resources.assign_phone_route")}</p>
       <div class="number-grid">
         ${existing.map((n, i) => `
           <button class="number-card existing" data-existing-sid="${escapeHtml(n.sid)}">
@@ -3707,6 +4006,254 @@ function formatPhone(p) {
   return m ? `+1 (${m[1]}) ${m[2]}-${m[3]}` : p;
 }
 
+// Coerce a user-typed destination into E.164, fixing common sloppiness
+// (spaces, dashes, parens, 00/011 international prefixes, missing +). Returns
+// {ok:true, e164} when it can, else {ok:false, reason} so the UI can reject a
+// number that does not look like a real destination.
+function normalizeE164(raw) {
+  if (!raw) return { ok: false, reason: "empty" };
+  const s = String(raw).trim();
+  const hadPlus = s.startsWith("+");
+  let digits = s.replace(/\D/g, "");
+  if (!hadPlus && digits.startsWith("011")) digits = digits.slice(3);   // US intl prefix
+  else if (!hadPlus && digits.startsWith("00")) digits = digits.slice(2); // EU intl prefix
+  if (!digits) return { ok: false, reason: "empty" };
+  if (hadPlus) {
+    return (digits.length >= 8 && digits.length <= 15)
+      ? { ok: true, e164: "+" + digits }
+      : { ok: false, reason: "length" };
+  }
+  if (digits.length === 10) return { ok: true, e164: "+1" + digits };            // US/CA local
+  if (digits.length === 11 && digits.startsWith("1")) return { ok: true, e164: "+" + digits };
+  if (digits.length >= 11 && digits.length <= 15) return { ok: true, e164: "+" + digits };
+  return { ok: false, reason: "invalid" };
+}
+
+// ============ ACCOUNT CHIP ============
+let _acctBooted = false;
+async function bootAccountChip() {
+  if (_acctBooted) return; _acctBooted = true;
+  const chip = document.getElementById("acct-chip");
+  const menu = document.getElementById("acct-menu");
+  if (!chip || !menu) return;
+  chip.addEventListener("click", () => {
+    const open = menu.hidden; menu.hidden = !open;
+    chip.setAttribute("aria-expanded", String(open));
+    if (open) renderAcctMenu();
+  });
+  document.addEventListener("click", e => {
+    if (!e.target.closest(".acct-chip-wrap")) { menu.hidden = true; chip.setAttribute("aria-expanded","false"); }
+  });
+  await refreshAccountChip(true);
+}
+
+async function refreshAccountChip(useCached = false) {
+  const chip = document.getElementById("acct-chip");
+  const label = document.getElementById("acct-chip-label");
+  if (!chip || !label) return;
+  // loadConfig() already fetched /api/account at boot to decide the onboarding
+  // gate; avoid firing a second identical request on first paint.
+  let a = useCached && window._account ? window._account : null;
+  if (!a) {
+    const r = await swApi("GET", "/api/account", undefined, { label: "account context" });
+    a = (r && r.data) || { mode: "solo", shared: false, has_own: false, space: "" };
+    window._account = a;
+  }
+  if (a.has_own && a.shared) {
+    // Shared deployment + own account connected: only OUTBOUND moved to their
+    // account. The chip must not claim the whole session did.
+    chip.className = "acct-chip own";
+    const space = (a.space || "your account").replace(/\.signalwire\.com$/, "");
+    label.textContent = space + " · outbound";
+  } else if (a.has_own) {
+    chip.className = "acct-chip own";
+    label.textContent = "Your space" + (a.space ? " · " + a.space.replace(/\.signalwire\.com$/, "") : "");
+  } else {
+    chip.className = "acct-chip shared";
+    label.textContent = a.shared ? "Workshop account" : "Your account";
+  }
+}
+
+function renderAcctMenu() {
+  const menu = document.getElementById("acct-menu");
+  const a = window._account || {};
+  if (a.has_own && a.shared) {
+    menu.innerHTML = `<button type="button" disabled style="opacity:.7;cursor:default;">Build runs on the workshop account<small>Shared, pre-provisioned</small></button>
+      <button type="button" disabled style="opacity:.7;cursor:default;">${escapeHtml(a.space || "Your account")}<small>Outbound and verification run here</small></button>
+      <button type="button" id="acct-switch-shared">Disconnect<small>Back to the workshop account</small></button>`;
+    document.getElementById("acct-switch-shared")?.addEventListener("click", switchToSharedAccount);
+  } else if (a.has_own) {
+    // Solo/BYO deployment: these creds are the whole session. No fake
+    // "workshop account" to switch to; logging out returns to the login screen.
+    menu.innerHTML = `<button type="button" disabled style="opacity:.7;cursor:default;">${escapeHtml(a.space || "Your account")}<small>Everything runs here</small></button>
+      <button type="button" id="acct-logout">Log out<small>Returns to the login screen</small></button>`;
+    const btn = document.getElementById("acct-logout");
+    btn?.addEventListener("click", () => {
+      if (btn.dataset.armed === "1") { logOutOwnAccount(); return; }
+      btn.dataset.armed = "1";
+      btn.innerHTML = `Confirm log out?<small>Your session credentials are cleared</small>`;
+    });
+  } else {
+    menu.innerHTML = `<button type="button" class="mi-hl" id="acct-connect">Use your own account<small>Connect the agent to your SignalWire Space</small></button>`;
+    document.getElementById("acct-connect")?.addEventListener("click", () => { menu.hidden = true; if (window.openConnectDrawer) window.openConnectDrawer(); });
+  }
+}
+
+async function logOutOwnAccount() {
+  await swApi("POST", "/api/credentials/clear", {}, { label: "log out" });
+  const _am = document.getElementById("acct-menu"); if (_am) _am.hidden = true;
+  state.credsConfigured = false;
+  window.location.reload();   // reload lands wherever onboardingComplete says —
+                              // usually the workshop, with call surfaces gated
+}
+
+// Pull the per-version dedicated numbers (shared/workshop mode only) so each
+// guided card can show "call THIS number". Non-fatal: on failure the cards
+// simply omit the number. Re-renders once the map arrives.
+async function fetchAgentNumbers() {
+  try {
+    const r = await swApi("GET", "/api/agent/numbers", undefined, { label: "agent numbers" });
+    const d = (r && r.data) || {};
+    if (!d.shared || !Array.isArray(d.agents)) return;
+    const map = {};
+    d.agents.forEach(a => { if (a.e164) map[a.route] = a.e164; });
+    if (Object.keys(map).length) { window._agentNumbers = map; renderAll(); }
+  } catch (e) { /* non-fatal */ }
+}
+
+async function switchToSharedAccount() {
+  await swApi("POST", "/api/credentials/clear", {}, { label: "switch to workshop account" });
+  await refreshAccountChip();
+  if (window.updateCapstoneGate) updateCapstoneGate();
+  const _am = document.getElementById("acct-menu"); if (_am) _am.hidden = true;
+  renderAll();
+}
+
+// ============ CONNECT-ACCOUNT DRAWER ============
+let _drawerBooted = false;
+function bootConnectDrawer() {
+  if (_drawerBooted) return; _drawerBooted = true;
+  const scrim = document.getElementById("connect-scrim");
+  const drawer = document.getElementById("connect-drawer");
+  const close = () => { drawer.hidden = true; drawer.setAttribute("aria-hidden","true"); scrim.hidden = true; };
+  scrim?.addEventListener("click", close);
+  document.getElementById("cd-cancel-btn")?.addEventListener("click", close);
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !drawer.hidden) close(); });
+  document.getElementById("cd-connect-btn")?.addEventListener("click", submitConnectDrawer);
+  window.openConnectDrawer = function () {
+    // Start each open clean: no stale creds or error from a prior attempt.
+    ["cd-project", "cd-token", "cd-space"].forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
+    const errEl = document.getElementById("cd-error"); if (errEl) errEl.hidden = true;
+    // If the account is already connected, jump straight to the number step.
+    if ((window._account || {}).has_own === true) {
+      scrim.hidden = false; drawer.hidden = false; drawer.setAttribute("aria-hidden","false");
+      showOwnNumberStep();
+      return;
+    }
+    cdShowNumberStep(false);   // reset to the credentials step
+    scrim.hidden = false; drawer.hidden = false; drawer.setAttribute("aria-hidden","false");
+    document.getElementById("cd-project")?.focus();
+  };
+}
+
+async function submitConnectDrawer() {
+  const project = document.getElementById("cd-project").value.trim();
+  const token = document.getElementById("cd-token").value.trim();
+  const space = document.getElementById("cd-space").value.trim();
+  const btn = document.getElementById("cd-connect-btn");
+  const err = document.getElementById("cd-error");
+  err.hidden = true;
+  if (!project || !token || !space) { err.textContent = "All three fields are required."; err.hidden = false; return; }
+  btn.disabled = true; btn.textContent = "Connecting...";
+  const r = await swApi("POST", "/api/credentials", {
+    SIGNALWIRE_PROJECT_ID: project, SIGNALWIRE_TOKEN: token, SIGNALWIRE_SPACE: space,
+  }, { label: "connect your own account" });
+  btn.disabled = false; btn.textContent = "Connect account";
+  if (r.ok && r.data && r.data.configured) {
+    await refreshAccountChip();
+    if (window.updateCapstoneGate) updateCapstoneGate();
+    if (document.getElementById("c2c-widget-mount")) { _c2cBooted = false; bootC2C(); }
+    renderAll();
+    // Stay in the drawer and move to the number step (pick or buy).
+    await showOwnNumberStep();
+  } else {
+    err.textContent = (r.data && r.data.error) || "Could not connect that account. Check the values and try again.";
+    err.hidden = false;
+  }
+}
+
+/** Toggle the drawer between its credentials step and its number step. */
+function cdShowNumberStep(show) {
+  ["cd-project","cd-token","cd-space"].forEach(id => {
+    const f = document.getElementById(id); if (f && f.closest(".cd-field")) f.closest(".cd-field").hidden = show;
+  });
+  ["cd-connect-btn","cd-error"].forEach(id => { const el = document.getElementById(id); if (el) el.hidden = show || (id==="cd-error"); });
+  const sub = document.querySelector("#connect-drawer .cd-sub"); if (sub) sub.hidden = show;
+  const reassure = document.querySelector("#connect-drawer .cd-reassure"); if (reassure) reassure.hidden = show;
+  const invite = document.getElementById("cd-signup-invite"); if (invite) invite.hidden = show;
+  const ns = document.getElementById("cd-number-step"); if (ns) ns.hidden = !show;
+  const h = document.querySelector("#connect-drawer h3"); if (h) h.textContent = show ? "Pick a number for the demo" : "Connect to place the call";
+}
+
+/** After connecting, load the attendee's own numbers: let them pick one (which
+ *  points Buddy's inbound agent at it + becomes the outbound from-number), or
+ *  send them to buy one if the account has none. */
+async function showOwnNumberStep() {
+  cdShowNumberStep(true);
+  const host = document.getElementById("cd-number-step");
+  host.innerHTML = `<p class="cd-sub">Loading your numbers…</p>`;
+  const r = await swApi("GET", "/api/own/numbers", undefined, { label: "list your account numbers" });
+  if (!r.ok) {
+    host.innerHTML = `<div class="cd-error" style="display:block">Couldn't read your numbers. <a href="#" id="cd-num-retry">Try again</a></div>`;
+    document.getElementById("cd-num-retry")?.addEventListener("click", e => { e.preventDefault(); showOwnNumberStep(); });
+    return;
+  }
+  const d = r.data || {};
+  const nums = Array.isArray(d.numbers) ? d.numbers : [];
+  if (!nums.length) {
+    host.innerHTML = `
+      <p class="cd-sub">Your account has no phone numbers yet. Buy one on SignalWire, then come back.</p>
+      <a class="cd-connect" style="display:block;text-align:center;text-decoration:none;" href="${escapeHtml(d.buy_url || '#')}" target="_blank" rel="noopener noreferrer">Buy a number on SignalWire →</a>
+      <button class="cd-cancel" id="cd-num-refresh" type="button">I bought one — refresh</button>`;
+    document.getElementById("cd-num-refresh")?.addEventListener("click", () => showOwnNumberStep());
+    return;
+  }
+  const opts = nums.map(n => `<option value="${escapeHtml(n.e164)}">${escapeHtml(formatPhone(n.e164))}${n.name ? " · " + escapeHtml(n.name) : ""}</option>`).join("");
+  host.innerHTML = `
+    <p class="cd-sub">Pick the number for this demo. Buddy will answer it when you call in, and dial out from it.</p>
+    <div class="cd-field"><label for="cd-num-select">Your numbers</label><select id="cd-num-select">${opts}</select></div>
+    <div id="cd-num-error" class="cd-error" hidden></div>
+    <button class="cd-connect" id="cd-num-use" type="button">Use this number</button>
+    <button class="cd-cancel" id="cd-num-skip" type="button">Skip for now</button>`;
+  document.getElementById("cd-num-skip")?.addEventListener("click", closeConnectDrawer);
+  document.getElementById("cd-num-use")?.addEventListener("click", async () => {
+    const sel = document.getElementById("cd-num-select");
+    const use = document.getElementById("cd-num-use");
+    const errEl = document.getElementById("cd-num-error");
+    const number = sel ? sel.value : "";
+    if (!number) return;
+    use.disabled = true; use.textContent = "Setting up…"; if (errEl) errEl.hidden = true;
+    const resp = await swApi("POST", "/api/own/use-number", { number }, { label: "point Buddy at your number" });
+    use.disabled = false; use.textContent = "Use this number";
+    if (resp.ok && resp.data && resp.data.ok) {
+      const toEl = document.getElementById("capstone-to");
+      if (toEl) { toEl.dataset.prefilled = "1"; }   // keep the verified-number prefill from clobbering
+      closeConnectDrawer();
+      if (window.updateCapstoneGate) updateCapstoneGate();
+    } else if (errEl) {
+      errEl.textContent = (resp.data && resp.data.error) || "Couldn't set that number up. Try another.";
+      errEl.hidden = false;
+    }
+  });
+}
+
+function closeConnectDrawer() {
+  const d = document.getElementById("connect-drawer"), s = document.getElementById("connect-scrim");
+  if (d) { d.hidden = true; d.setAttribute("aria-hidden","true"); }
+  if (s) s.hidden = true;
+  cdShowNumberStep(false);   // reset so the next open starts at the creds step
+}
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
 }
@@ -3717,7 +4264,7 @@ function attachWizardHandlers() {
   if (m === 1) {
     on("wiz-creds-next", "click", () => submitCredentials());
   } else if (m === 2) {
-    on("wiz-num-back", "click", () => { wizard.errorMsg = ""; wizard.editingCreds = true; backMilestone(); });
+    on("wiz-num-back", "click", () => { wizard.errorMsg = ""; backMilestone(); });
     on("wiz-buy-instead", "click", e => { e.preventDefault(); wizard.numbers = []; wizard.errorMsg = ""; rerenderWizard(); });
     on("wiz-search-again", "click", e => { e.preventDefault(); wizard.searched = null; wizard.searchedAreaCode = ""; rerenderWizard(); });
     on("wiz-search-any", "click", e => { e.preventDefault(); wizard.searchedAreaCode = ""; runSearch(null); });
@@ -3771,7 +4318,6 @@ async function submitCredentials() {
     return;
   }
   wizard.pending = false;
-  wizard.editingCreds = false;   // done editing creds; let the gate resume normally
   state.credsConfigured = true;  // server confirmed configured:true above
   state.milestone = 2;
   wizard.numbers = null; wizard.searched = null;
@@ -3821,7 +4367,7 @@ async function runSearch(areaCode) {
 async function selectNumber(payload) {
   wizard.pending = true; wizard.errorMsg = "";
   rerenderWizard();
-  const r = await swApi("POST", "/api/setup/select", { ...payload, route: "/step04" }, { label: "configure phone number" });
+  const r = await swApi("POST", "/api/setup/select", { ...payload, route: "/hello" }, { label: "configure phone number" });
   if (!r.ok) {
     wizard.pending = false;
     wizard.errorMsg = r.data?.error || r.error || "Could not configure the number.";
@@ -3841,8 +4387,14 @@ async function restartWizard() {
   if (!confirm("Forget the configured phone number? This won't release the number from your SignalWire account. It resets the workshop wizard.")) return;
   await swApi("POST", "/api/setup/reset", undefined, { label: "reset workshop state" });
   wizard.numbers = null; wizard.searched = null; wizard.setup = null; wizard.errorMsg = "";
-  state.milestone = 1;
-  state.onboardingComplete = false;
+  // Reset the inline verify callout state: a restart may swap to a different space,
+  // so the prior callId must not carry over.
+  verify.callId = null;
+  state.verifiedNumber = "";   // drop any cached verified number from the old space
+  // Stay inside the number flow: return to the number-search step rather than
+  // booting to the landing (onboardingComplete is deliberately untouched).
+  state.milestone = 2;
+  wizard.gettingNumber = true;
   persist();
   renderAll();
 }
@@ -3856,10 +4408,11 @@ function backMilestone() {
 }
 
 function completeOnboarding() {
+  wizard.gettingNumber = false;
   state.onboardingComplete = true;
   persist();
   // Route through setActiveStep so the first-visit celebration fires on entry.
-  setActiveStep("/step04");
+  setActiveStep("/hello");
 }
 
 /* ---- Locked previews (Onboarding state) ---- */
@@ -3869,7 +4422,7 @@ function renderLockedPreviews() {
     return `${sep}
       <div class="preview-node">
         <div class="preview-node-circle">${s.step.replace(/[^0-9]/g, "")}</div>
-        <div class="preview-node-label">${s.name.split(" ")[0]}</div>
+        <div class="preview-node-label">${escapeHtml(s.short || s.name.split(" ")[0])}</div>
       </div>`;
   }).join("");
 
@@ -3877,18 +4430,18 @@ function renderLockedPreviews() {
     <section class="preview-section">
       <div class="preview-inner">
         <div class="preview-head">
-          <div class="preview-eyebrow">Unlocks after your first call</div>
-          <h2>Seven agents. Each adds one new capability.</h2>
-          <p>Once Buddy answers your phone, swap the URL on your number to try jokes, weather, math, skills - all the way up to a production-ready agent.</p>
+          <div class="preview-eyebrow">What you'll build</div>
+          <h2>Four agents. Each adds one new capability.</h2>
+          <p>Weather, jokes, and skills, all the way up to a production-ready agent shape. Every version ships with its source code in Python and TypeScript.</p>
         </div>
         <div class="preview-timeline" aria-hidden="true">
           ${nodes}
         </div>
-        <p class="preview-blurb">Finish setup above to unlock the full journey - including source code in Python and TypeScript for every agent.</p>
+        <p class="preview-blurb">Press Start above and Version 1 opens first. Each version unlocks the next.</p>
       </div>
     </section>
 
-    <section class="pillars-section" id="pillars-section">
+    <section class="pillars-section" id="pillars-section" hidden>
       <div class="pillars-head">
         <div class="label">The whole platform, end to end</div>
         <h2>Call Buddy from your browser. No phone, no dialing</h2>
@@ -3920,12 +4473,33 @@ function renderLockedPreviews() {
 /* The #cf-section is static HTML outside #app so re-renders never destroy an
    active call. bootC2C() is called once from renderWorkshop; the retry button
    resets the flag so a fresh attempt is possible without a full page reload. */
+/* Solo + logged out: the browser call runs on the attendee's Space, so the
+   widget area becomes a login ask (with a signup companion) instead of a
+   dead widget + error. Shared mode never hits this (build creds are ours). */
+function renderC2CGate(mount) {
+  mount.innerHTML = `
+    <div class="c2c-gate">
+      <p class="c2c-gate-title">Buddy answers this call on your SignalWire Space.</p>
+      <button class="cta-btn" id="c2c-login-btn" type="button">Log in with SignalWire</button>
+      <p class="signup-line">New to SignalWire? <a href="https://signalwire.com/signup" target="_blank" rel="noopener noreferrer">Create a free Space</a> · free trial credits, no card required.</p>
+    </div>`;
+  const btn = document.getElementById("c2c-login-btn");
+  if (btn) btn.addEventListener("click", () => { if (window.openConnectDrawer) window.openConnectDrawer(); });
+}
+
 var _c2cBooted = false;
 function bootC2C() {
   if (_c2cBooted) return;
   _c2cBooted = true;
   var mount = document.getElementById("c2c-widget-mount");
   if (!mount) return;
+
+  var a = window._account || {};
+  if (a.shared !== true && a.has_own !== true) {
+    _c2cBooted = false;           // allow a re-boot after the user connects
+    renderC2CGate(mount);
+    return;                       // no fetch, no error timer
+  }
 
   /* 4-second guard: if the custom element never registers, show an error. */
   setTimeout(function () {
@@ -3953,7 +4527,7 @@ function bootC2C() {
       var w = document.createElement("sw-click-to-call");
       w.setAttribute("token", cfg.token);
       w.setAttribute("destination", cfg.destination);
-      w.setAttribute("label", "📞 Call Buddy from your browser");
+      w.setAttribute("label", "Call Buddy from your browser");
       mount.innerHTML = "";
       mount.appendChild(w);
       ["sw-dial", "sw-call-hangup", "sw-call-ended"].forEach(function (evName) {
@@ -3998,11 +4572,13 @@ function renderWorkshop() {
     <section class="hero">
       <div class="hero-inner workshop-hero">
         <div class="status-pill">
-          ✓ Setup complete
+          ✓ Workshop started
           <span class="sep" aria-hidden="true">·</span>
           ${state.visited.length} of ${STEPS_META.length} agents tried
           <span class="sep" aria-hidden="true">·</span>
-          <button type="button" class="link-button" id="restart-wizard-link">Restart wizard</button>
+          ${(window._account || {}).shared === true
+            ? `<button type="button" class="link-button" id="reset-progress-pill">Reset progress</button>`
+            : `<button type="button" class="link-button" id="restart-wizard-link">Start over</button>`}
         </div>
         <details class="advanced-number">
           <summary>Advanced: use your own number</summary>
@@ -4019,19 +4595,17 @@ function renderWorkshop() {
           <p>Each version adds one. Click any node to switch. Your number follows.</p>
         </div>
       </div>
-      <div class="timeline-sticky"><div class="timeline-sticky-inner"><div id="running-version-badge" class="running-version-badge"></div>${renderStepTimeline()}</div></div>
+      <div class="timeline-sticky"><div class="timeline-sticky-inner">${renderStepTimeline()}</div></div>
       ${renderStepsStack()}
     </section>
 
     ${renderReceiptsSection()}
 
-    <div class="postprompt-cta">
-      <button id="open-postprompt" class="cta-btn" type="button">📊 See what Buddy captured</button>
-      <p class="muted">After you've called the final version of Buddy, open this to view the data he pulled from your call.</p>
-    </div>
 
-    
   `;
+  // The "See what Buddy captured" review action and the outbound capstone now
+  // live in the static #cf-section finale (the two direction cards + Live Wire),
+  // so they are not rendered here.
 
   document.getElementById("restart-wizard-link")?.addEventListener("click", e => {
     e.preventDefault();
@@ -4039,6 +4613,10 @@ function renderWorkshop() {
     state.milestone = 1;
     persist();
     renderAll();
+  });
+  document.getElementById("reset-progress-pill")?.addEventListener("click", e => {
+    e.preventDefault();
+    resetState();
   });
   document.getElementById("reset-progress-link")?.addEventListener("click", e => {
     e.preventDefault();
@@ -4067,6 +4645,19 @@ function renderWorkshop() {
   document.querySelectorAll("[data-copy-swml]").forEach(b => {
     b.addEventListener("click", e => copyUrl(e.currentTarget, getSwmlUrl(e.currentTarget.dataset.copySwml)));
   });
+  bootVoiceOrbs();
+  document.querySelectorAll(".ds-login-link").forEach(el => {
+    el.addEventListener("click", e => { e.preventDefault(); if (window.openConnectDrawer) window.openConnectDrawer(); });
+  });
+  document.querySelectorAll(".ds-number-link").forEach(el => {
+    el.addEventListener("click", e => {
+      e.preventDefault();
+      wizard.gettingNumber = true;
+      state.milestone = 2;
+      persist();
+      renderAll();
+    });
+  });
   wireAnnotatedCode();
   document.querySelectorAll(".step-section:not(.active)").forEach(sec => {
     sec.addEventListener("click", e => {
@@ -4082,7 +4673,155 @@ function renderWorkshop() {
   var wfEl = document.getElementById("workshop-footer");
   if (wfEl) wfEl.hidden = false;
   bootC2C();
-  renderPinnedHeader();  // populate the always-visible number badge once the DOM is in place
+
+  /* The outbound dial sandbox lives inline in the "Buddy calls you" card (static
+     #cf-section). Boot it once: render the code, wire Place Call, set lock state. */
+  bootOutboundSandbox();
+  updateCapstoneGate();
+}
+
+let _outboundBooted = false;
+/** Render the in-card dial sandbox once and wire its Place Call button. */
+function bootOutboundSandbox() {
+  const sandbox = document.getElementById("capstone-sandbox");
+  if (!sandbox || _outboundBooted) return;
+  _outboundBooted = true;
+  sandbox.innerHTML = renderCapstoneSandbox();
+  // The static "verify yours first" hint is redundant with (and was firing
+  // ahead of) the #capstone-verify callout, which only shows when verification
+  // is actually needed. Keep it hidden; verify + connect callouts carry the
+  // real messaging.
+  const hint = document.getElementById("capstone-unverified-hint");
+  if (hint) hint.classList.remove("show");
+  wireCapstonePlaceCall();
+  const cbtn = document.getElementById("capstone-connect-btn");
+  if (cbtn && !cbtn.dataset.bound) {
+    cbtn.dataset.bound = "1";
+    cbtn.addEventListener("click", () => { if (window.openConnectDrawer) window.openConnectDrawer(); });
+  }
+
+  // Wire inline verify callout buttons (once, guarded via dataset.bound).
+  const cvBtn = document.getElementById("capstone-verify-btn");
+  if (cvBtn && !cvBtn.dataset.bound) {
+    cvBtn.dataset.bound = "1";
+    cvBtn.addEventListener("click", async () => {
+      const toEl = document.getElementById("capstone-to");
+      const statusEl = document.getElementById("capstone-verify-status");
+      const codeDiv = document.getElementById("capstone-verify-code");
+      const rawTo = (toEl ? toEl.value : "").trim();
+      // normalizeE164 returns {ok, e164} / {ok:false, reason} — not a string —
+      // so fix formatting when it can, otherwise fall back to the raw input
+      // and let the server reject it with a real error message.
+      const normTo = normalizeE164(rawTo);
+      const to = normTo.ok ? normTo.e164 : rawTo;
+      if (statusEl) statusEl.textContent = "";
+      const r = await swApi("POST", "/api/verify/start", { number: to }, { label: "start outbound verification" });
+      if (!r.ok) {
+        if (statusEl) statusEl.textContent = r.data?.error || r.error || "Could not start verification.";
+        return;
+      }
+      verify.callId = r.data?.id || null;
+      if (codeDiv) codeDiv.hidden = false;
+      if (statusEl) statusEl.textContent = "SignalWire is calling you with a code.";
+    });
+  }
+
+  const cvConfirm = document.getElementById("capstone-verify-confirm");
+  if (cvConfirm && !cvConfirm.dataset.bound) {
+    cvConfirm.dataset.bound = "1";
+    cvConfirm.addEventListener("click", async () => {
+      const statusEl = document.getElementById("capstone-verify-status");
+      const codeInput = document.getElementById("capstone-verify-input");
+      const code = (codeInput ? codeInput.value : "").trim();
+      if (statusEl) statusEl.textContent = "";
+      if (!code || !/^\d{6}$/.test(code)) {
+        if (statusEl) statusEl.textContent = "Enter the 6-digit code read to you on the call.";
+        return;
+      }
+      if (!verify.callId) {
+        if (statusEl) statusEl.textContent = "Session lost. Refresh and try again.";
+        return;
+      }
+      const r = await swApi("POST", "/api/verify/confirm", { id: verify.callId, code }, { label: "confirm outbound verification" });
+      if (!r.ok) {
+        if (statusEl) statusEl.textContent = r.data?.error || r.error || "Verification failed. Try again.";
+        return;
+      }
+      if (r.data?.verified) {
+        const cv = document.getElementById("capstone-verify");
+        if (cv) cv.hidden = true;
+        const placeBtn = document.getElementById("capstone-place-btn");
+        if (placeBtn) placeBtn.disabled = false;
+        if (statusEl) statusEl.textContent = "";
+        verify.callId = null;
+        // Populate the just-verified number into the dial code so the user sees
+        // their own confirmed number in the "to" field (not a stale default).
+        const toEl = document.getElementById("capstone-to");
+        const verified = (toEl && toEl.value.trim()) || "";
+        if (verified) {
+          state.verifiedNumber = verified;
+          if (toEl) toEl.value = verified;
+        }
+        refreshOutboundVerify();
+      } else {
+        if (statusEl) statusEl.textContent = "That code did not match. Try again or click Call me again.";
+      }
+    });
+  }
+
+  const cvRedial = document.getElementById("capstone-verify-redial");
+  if (cvRedial && !cvRedial.dataset.bound) {
+    cvRedial.dataset.bound = "1";
+    cvRedial.addEventListener("click", async () => {
+      const statusEl = document.getElementById("capstone-verify-status");
+      if (statusEl) statusEl.textContent = "";
+      if (!verify.callId) {
+        if (statusEl) statusEl.textContent = "Session lost. Refresh and try again.";
+        return;
+      }
+      const r = await swApi("POST", "/api/verify/redial", { id: verify.callId }, { label: "redial outbound verification" });
+      if (!r.ok) {
+        if (statusEl) statusEl.textContent = r.data?.error || r.error || "Could not place another call.";
+        return;
+      }
+      if (statusEl) statusEl.textContent = "SignalWire is calling you again.";
+    });
+  }
+
+  // Re-check verify-needed whenever the destination changes. Changing the
+  // number abandons any in-progress verification (it was for the old number),
+  // and we debounce so we don't fire /api/verify/needed on every keystroke.
+  const toEl = document.getElementById("capstone-to");
+  if (toEl && !toEl.dataset.verifyBound) {
+    toEl.dataset.verifyBound = "1";
+    const onToChange = () => {
+      const codeDiv = document.getElementById("capstone-verify-code");
+      if (codeDiv) codeDiv.hidden = true;      // drop stale code-entry for the old number
+      verify.callId = null;
+      const st = document.getElementById("capstone-verify-status");
+      if (st) { st.textContent = ""; st.className = "capstone-status"; }
+      clearTimeout(toEl._verifyT);
+      toEl._verifyT = setTimeout(refreshOutboundVerify, 400);
+    };
+    toEl.addEventListener("input", onToChange);
+    toEl.addEventListener("change", onToChange);
+    // On blur, tidy the number into E.164 for the user (fix dashes/parens/
+    // missing +). Only reject visibly if it can't be salvaged into a plausible
+    // destination; a close-enough number is silently corrected.
+    toEl.addEventListener("blur", () => {
+      const raw = (toEl.value || "").trim();
+      if (!raw) return;
+      const norm = normalizeE164(raw);
+      const st = document.getElementById("capstone-status");
+      if (norm.ok) {
+        toEl.value = norm.e164;
+        if (st && st.classList.contains("err")) { st.textContent = ""; st.className = "capstone-status"; }
+      } else if (st) {
+        st.textContent = "That doesn't look like a valid phone number. Use a format like +1 555 123 4567.";
+        st.className = "capstone-status show err";
+      }
+    });
+  }
 }
 
 function renderPinnedUrlCard() {
@@ -4096,16 +4835,6 @@ function renderPinnedUrlCard() {
       </div>
       <button class="btn-copy" id="pinned-copy">Copy URL</button>
     </div>`;
-}
-
-function renderPinnedHeader() {
-  const host = document.getElementById("running-version-badge");
-  if (!host) return;
-  const num = wizard.setup?.phone_number ? formatPhone(wizard.setup.phone_number) : null;
-  const step = STEPS_META.find(s => s.route === (wizard.setup?.route || state.activeStep)) || STEPS_META[0];
-  host.innerHTML = num
-    ? `<span class="rv-phone">${escapeHtml(num)}</span> · running Buddy <strong>${escapeHtml(step.step)}</strong>`
-    : "";
 }
 
 function renderStepTimeline() {
@@ -4129,7 +4858,7 @@ function renderStepTimeline() {
       <button class="timeline-node ${cls}" data-route="${s.route}"${ariaCurrent}
               aria-label="${escapeHtml(s.step)}: ${escapeHtml(s.name)}, ${stateWord}">
         <div class="timeline-circle">${num}</div>
-        <div class="timeline-label">${escapeHtml(s.name.split(" ")[0])}</div>
+        <div class="timeline-label">${escapeHtml(s.short || s.name.split(" ")[0])}</div>
       </button>`;
   });
   html += `</div>`;
@@ -4282,6 +5011,387 @@ function wireAnnotatedCode() {
   });
 }
 
+const DIAL_PHONE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>`;
+
+// The dial strip: every guided card presents ITS phone line, always. In
+// shared/workshop mode each version has its own dedicated number (from
+// /api/agent/numbers); in solo/wizard mode one number follows the selected
+// version; with no number at all the strip stays visible and says what to do
+// next instead of silently vanishing.
+//
+// Every state also carries a "voice orb": a minimal in-card voice-only
+// browser call so a number is never a prerequisite for hearing the agent.
+function renderVoiceOrb(step) {
+  const a = window._account || {};
+  if (a.shared !== true && a.has_own !== true) return "";
+  return `
+    <button class="voice-orb" data-orb-route="${escapeHtml(step.route)}" type="button"
+            aria-label="Talk to ${escapeHtml(step.step)} in your browser" title="Talk to ${escapeHtml(step.step)} in your browser">
+      <canvas class="orb-canvas" width="144" height="144" aria-hidden="true"></canvas>
+      <span class="orb-glyph" aria-hidden="true">${DIAL_PHONE_SVG}</span>
+    </button>`;
+}
+
+function renderDialStrip(step) {
+  const dedicated = (window._agentNumbers || {})[step.route];
+  const dialNumber = dedicated || wizard.setup?.phone_number || "";
+  if (!dialNumber) {
+    const a = window._account || {};
+    let hint;
+    if (a.shared === true) {
+      hint = `Lines are being set up. Refresh in a minute, or use the browser call at the end.`;
+    } else if (a.has_own !== true) {
+      hint = `<a href="#" class="ds-login-link">Log in</a> to connect a number, or use the browser call at the end.`;
+    } else {
+      hint = `<a href="#" class="ds-number-link">Get a number</a> and it follows the version you're viewing.`;
+    }
+    return `
+    <div class="dial-strip no-number">
+      <span class="ds-badge" aria-hidden="true">${DIAL_PHONE_SVG}</span>
+      <span class="ds-main">
+        <span class="ds-label">No number connected yet</span>
+        <span class="ds-sub">${hint}</span>
+      </span>
+      <span class="ds-actions">${renderVoiceOrb(step)}</span>
+    </div>`;
+  }
+  const isCurrentDialTarget = wizard.setup?.route === step.route;
+  const label = dedicated
+    ? `Call ${escapeHtml(step.step)} · Dedicated line`
+    : `Call ${escapeHtml(step.step)} · Your number`;
+  const sub = dedicated
+    ? `This line always answers ${escapeHtml(step.step)}. Dial it and ${escapeHtml(step.callPrompt)}`
+    : (isCurrentDialTarget
+        ? `Your number dials this version right now. Call and ${escapeHtml(step.callPrompt)}`
+        : `Select this version and your number follows.`);
+  return `
+    <div class="dial-strip has-number">
+      <span class="ds-badge" aria-hidden="true">${DIAL_PHONE_SVG}</span>
+      <span class="ds-main">
+        <span class="ds-label">${label}</span>
+        <a class="ds-number" href="tel:${escapeHtml(dialNumber)}">${escapeHtml(formatPhone(dialNumber))}</a>
+        <span class="ds-sub">${sub}</span>
+      </span>
+      <span class="ds-actions">${renderVoiceOrb(step)}</span>
+    </div>`;
+}
+
+/* One in-card voice call at a time. Voice-only (audio:true, video:false) via
+   the raw Browser SDK v4; the web-components widget (finale) is untouched.
+   The ring: N points around a circle, radius modulated by smoothed analyser
+   volume + per-point noise; idle = thin breathing circle. */
+const _voiceOrb = { call: null, client: null, btn: null, raf: 0, audioCtx: null, analyser: null, state: "idle", gen: 0 };
+
+// Load SignalWire's Browser SDK (v4 UMD) from their official CDN, exactly once.
+// WHY the CDN and not esm.sh: esm.sh rebuilds the package into a chunked es2022
+// build whose StaticCredentialProvider fails the client's internal credential
+// check ("authenticate is not a function"). The cdn.signalwire.com bundle is a
+// single UMD file that sets window.SignalWire and works. The web-components embed
+// (finale) does not claim window.SignalWire, so there is no global collision.
+let _swSdkPromise = null;
+function loadSignalWireSDK() {
+  if (window.SignalWire && window.SignalWire.SignalWire) return Promise.resolve(window.SignalWire);
+  if (_swSdkPromise) return _swSdkPromise;
+  _swSdkPromise = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://cdn.signalwire.com/@signalwire/js";
+    s.onload = () => (window.SignalWire && window.SignalWire.SignalWire)
+      ? resolve(window.SignalWire)
+      : reject(new Error("SignalWire SDK loaded but SignalWire.SignalWire is missing"));
+    s.onerror = () => { _swSdkPromise = null; reject(new Error("Failed to load the SignalWire SDK")); };
+    document.head.appendChild(s);
+  });
+  return _swSdkPromise;
+}
+
+function bootVoiceOrbs() {
+  document.querySelectorAll(".voice-orb").forEach(b => {
+    b.addEventListener("click", () => {
+      if (b === _voiceOrb.btn && _voiceOrb.state !== "idle") { orbStop(); return; }
+      orbStart(b);
+    });
+  });
+}
+
+async function orbStart(btn) {
+  const route = btn.dataset.orbRoute;
+  await orbStop();                                   // singleton: hang up any live call
+  // Generation token: overlapping starts race (click orb B while orb A is
+  // still connecting). Each start claims a new generation; after every await
+  // this invocation checks it still owns the singleton, else it tears down
+  // whatever IT created (locals — published to _voiceOrb only while current)
+  // and bows out, so no live call is ever orphaned without a handle.
+  const myGen = ++_voiceOrb.gen;
+  const stale = () => myGen !== _voiceOrb.gen;
+  let client = null, call = null;
+  const teardown = () => {
+    try { call?.hangup?.(); } catch (_) {}
+    try { client?.disconnect?.(); } catch (_) {}
+  };
+  _voiceOrb.btn = btn; _orbSetState("connecting");
+  try {
+    const r = await swApi("GET", "/api/relay/config?route=" + encodeURIComponent(route), undefined, { label: "voice orb token" });
+    if (stale()) { teardown(); return; }
+    if (!r.ok || !r.data || !r.data.token) throw new Error((r.data && r.data.error) || "no token");
+    const SW = await loadSignalWireSDK();
+    if (stale()) { teardown(); return; }
+    // @signalwire/js v4 is class-based and POSITIONAL, not the old factory shape:
+    //   new SignalWire(credentialProvider, options)
+    // The first arg must be a credential provider (an object with authenticate()),
+    // NOT { token } - a raw token throws "credentialProvider.authenticate is not a
+    // function". Wrap the guest token in a StaticCredentialProvider.
+    const credentialProvider = new SW.StaticCredentialProvider({ token: r.data.token });
+    client = new SW.SignalWire(credentialProvider, { logLevel: "warn" });
+    if (stale()) { teardown(); return; }
+    _voiceOrb.client = client;
+    // dial(destination, options) is also positional in v4: the address string is
+    // the first arg, media options the second (the old { to, audio, video } object
+    // makes the SDK read options.to on a non-string and throw ".split is not a function").
+    call = await client.dial(r.data.destination, { audio: true, video: false });
+    if (stale()) { teardown(); return; }
+    _voiceOrb.call = call;
+    // The v4 Call is observable-based, NOT an event emitter: there is no
+    // call.on(...) (that throws "call.on is not a function"). Subscribe to
+    // status$, which progresses "connecting" -> "connected" -> "disconnected".
+    // dial() already initiates the call, so there is no call.start() to await.
+    call.status$.subscribe((status) => {
+      if (stale()) return;
+      if (status === "connected") { _orbSetState("live"); _orbAttachMedia(call); }
+      else if (status === "disconnected" || status === "disconnecting" || status === "destroyed") { orbStop(); }
+    });
+  } catch (e) {
+    teardown();                                      // this invocation's leftovers
+    if (stale()) return;                             // superseded: newer start owns the UI
+    showToast("Could not start the browser call. " + (e && e.message ? e.message : ""), "err");
+    orbStop();
+  }
+}
+
+async function orbStop() {
+  _voiceOrb.gen++;                                   // invalidate any in-flight orbStart
+  cancelAnimationFrame(_voiceOrb.raf); _voiceOrb.raf = 0;
+  try { await _voiceOrb.call?.hangup(); } catch (_) {}
+  try { _voiceOrb.client?.disconnect(); } catch (_) {}
+  try { _voiceOrb.audioCtx?.close(); } catch (_) {}
+  // Remote-audio sink: without this element nothing ever PLAYS the call.
+  if (_voiceOrb.audioEl) {
+    try { _voiceOrb.audioEl.pause(); _voiceOrb.audioEl.srcObject = null; _voiceOrb.audioEl.remove(); } catch (_) {}
+  }
+  document.querySelectorAll(".ds-callbar").forEach(el => el.remove());
+  _voiceOrb.call = null; _voiceOrb.client = null; _voiceOrb.audioCtx = null;
+  _voiceOrb.analyser = null; _voiceOrb.micAnalyser = null; _voiceOrb.audioEl = null;
+  _orbSetState("idle"); _voiceOrb.btn = null;
+}
+
+function _orbSetState(s) {
+  _voiceOrb.state = s;
+  document.querySelectorAll(".voice-orb").forEach(b => {
+    b.classList.toggle("is-connecting", b === _voiceOrb.btn && s === "connecting");
+    b.classList.toggle("is-live", b === _voiceOrb.btn && s === "live");
+  });
+}
+
+function _orbAttachMedia(call) {
+  const remote = call.remoteStream || (call.peer && call.peer.remoteStream) || null;
+  const local = call.localStream || (call.peer && call.peer.localStream) || null;
+  // Some builds deliver the remote stream late via an observable; catch it.
+  if (!remote && call.remoteStream$ && typeof call.remoteStream$.subscribe === "function") {
+    const gen = _voiceOrb.gen;
+    call.remoteStream$.subscribe(s => {
+      if (s && gen === _voiceOrb.gen && !_voiceOrb.audioEl) _orbAttachMedia(call);
+    });
+  }
+  // 1) AUDIO SINK — the SDK hands us the remote MediaStream but nothing plays
+  // it until it is attached to an element. Hidden <audio>, so the speaker
+  // select below can retarget it with setSinkId.
+  if (remote) {
+    const el = document.createElement("audio");
+    el.autoplay = true; el.setAttribute("playsinline", "");
+    el.style.display = "none";
+    el.srcObject = remote;
+    document.body.appendChild(el);
+    el.play().catch(() => {});
+    _voiceOrb.audioEl = el;
+  }
+  // 2) ANALYSERS — one AudioContext, two taps: Buddy (remote) drives the orb
+  // ring + his soundwave lane; the mic (local) drives the "You" lane.
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reduced && (remote || local)) {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    _voiceOrb.audioCtx = ctx;
+    if (remote) {
+      const analyser = ctx.createAnalyser(); analyser.fftSize = 256;
+      ctx.createMediaStreamSource(remote).connect(analyser);
+      _voiceOrb.analyser = analyser;
+    }
+    if (local) {
+      const micAnalyser = ctx.createAnalyser(); micAnalyser.fftSize = 256;
+      ctx.createMediaStreamSource(local).connect(micAnalyser);
+      _voiceOrb.micAnalyser = micAnalyser;
+    }
+  }
+  // 3) CALL BAR — soundwave lanes + device selects + hangup, inside the strip.
+  _orbInjectCallbar(call);
+  if (!reduced) _orbDrawLoop();
+}
+
+/* The live call bar: [BUDDY ▁▃▅▃▁] [YOU ▁▂▄▂▁] ... [mic ▾] [speaker ▾] [End].
+   Lives inside the active dial strip as a full-width row; removed on stop. */
+function _orbInjectCallbar(call) {
+  const strip = _voiceOrb.btn && _voiceOrb.btn.closest(".dial-strip");
+  if (!strip || strip.querySelector(".ds-callbar")) return;
+  const bar = document.createElement("div");
+  bar.className = "ds-callbar";
+  bar.innerHTML = `
+    <span class="cb-lane"><span class="cb-label">Buddy</span><canvas class="cb-wave" data-wave="remote" width="128" height="56"></canvas></span>
+    <span class="cb-lane"><span class="cb-label">You</span><canvas class="cb-wave cb-wave-you" data-wave="mic" width="128" height="56"></canvas></span>
+    <span class="cb-devices">
+      <span class="cb-dev" hidden>
+        <span class="cb-dev-label">Mic</span>
+        <select class="cb-select" data-dev="mic" aria-label="Microphone"></select>
+      </span>
+      <span class="cb-dev" hidden>
+        <span class="cb-dev-label">Speaker</span>
+        <select class="cb-select" data-dev="spk" aria-label="Speaker"></select>
+      </span>
+    </span>
+    <button type="button" class="cb-end">End call</button>`;
+  strip.appendChild(bar);
+  bar.querySelector(".cb-end").addEventListener("click", orbStop);
+  _orbPopulateDevices(call, bar);
+}
+
+async function _orbPopulateDevices(call, bar) {
+  let devices = [];
+  try { devices = await navigator.mediaDevices.enumerateDevices(); } catch (_) { return; }
+  const micSel = bar.querySelector('[data-dev="mic"]');
+  const spkSel = bar.querySelector('[data-dev="spk"]');
+  const fill = (sel, kind, fallbackName) => {
+    const list = devices.filter(d => d.kind === kind && d.deviceId);
+    if (!list.length) return false;
+    sel.innerHTML = list.map((d, i) =>
+      `<option value="${escapeHtml(d.deviceId)}">${escapeHtml(d.label || fallbackName + " " + (i + 1))}</option>`).join("");
+    sel.closest(".cb-dev").hidden = false;
+    return true;
+  };
+  // Microphone: always offered. Switching tries the SDK first, then falls back
+  // to replacing the outgoing audio track on the peer connection directly.
+  if (fill(micSel, "audioinput", "Microphone")) {
+    micSel.addEventListener("change", () => _orbSwitchMic(call, micSel.value));
+  }
+  // Speaker: retargets our audio sink (Chrome/Edge support setSinkId).
+  if (_voiceOrb.audioEl && typeof _voiceOrb.audioEl.setSinkId === "function" && fill(spkSel, "audiooutput", "Speaker")) {
+    spkSel.addEventListener("change", () => {
+      _voiceOrb.audioEl.setSinkId(spkSel.value).catch(() =>
+        showToast("Could not switch speaker.", "err"));
+    });
+  }
+}
+
+async function _orbSwitchMic(call, deviceId) {
+  const gen = _voiceOrb.gen;
+  try {
+    if (typeof call.updateMicrophone === "function") {
+      await call.updateMicrophone({ deviceId: { exact: deviceId } });
+      return;
+    }
+    // Fallback: capture the chosen mic ourselves and swap the outgoing track
+    // on the RTCPeerConnection (the SDK keeps its peer at call.peer.instance).
+    const pc = call.peer && call.peer.instance;
+    if (!(pc && typeof pc.getSenders === "function")) throw new Error("no peer connection");
+    const media = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: deviceId } } });
+    if (gen !== _voiceOrb.gen) { media.getTracks().forEach(t => t.stop()); return; }
+    const track = media.getAudioTracks()[0];
+    const sender = pc.getSenders().find(s => s.track && s.track.kind === "audio");
+    if (!sender) throw new Error("no audio sender");
+    const old = sender.track;
+    await sender.replaceTrack(track);
+    if (old) { try { old.stop(); } catch (_) {} }
+    // Re-tap the analyser so the "You" soundwave follows the new mic.
+    if (_voiceOrb.audioCtx && _voiceOrb.micAnalyser) {
+      const analyser = _voiceOrb.audioCtx.createAnalyser(); analyser.fftSize = 256;
+      _voiceOrb.audioCtx.createMediaStreamSource(media).connect(analyser);
+      _voiceOrb.micAnalyser = analyser;
+    }
+  } catch (_) {
+    showToast("Could not switch microphone.", "err");
+  }
+}
+
+/* Classic voice-assistant soundwave: 5 mirrored bars, center tallest, heights
+   driven by live band energy. Quiet = faint dots; speech = dancing bars. */
+function _orbDrawWave(canvas, analyser, color) {
+  const g = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  g.clearRect(0, 0, W, H);
+  const BARS = 5, bw = 8, gap = (W - BARS * bw) / (BARS + 1);
+  let bands = [0, 0, 0, 0, 0];
+  if (analyser) {
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(data);
+    // speech band (~85Hz-3kHz at 48k/256fft ≈ bins 1-16), split across 5 bars
+    for (let b = 0; b < BARS; b++) {
+      let s = 0; const from = 1 + b * 3;
+      for (let i = from; i < from + 3; i++) s += data[i];
+      bands[b] = Math.min(1, (s / 3) / 160);
+    }
+    // mirror so the center carries the most energy (bars: 3,1,0,2,4 order)
+    bands = [bands[3], bands[1], bands[0], bands[2], bands[4]];
+  }
+  for (let b = 0; b < BARS; b++) {
+    const h = Math.max(4, bands[b] * (H - 8));
+    const x = gap + b * (bw + gap);
+    const y = (H - h) / 2;
+    g.fillStyle = color;
+    g.globalAlpha = 0.35 + bands[b] * 0.65;
+    g.beginPath();
+    g.roundRect(x, y, bw, h, 4);
+    g.fill();
+  }
+  g.globalAlpha = 1;
+}
+
+function _orbDrawLoop() {
+  const btn = _voiceOrb.btn;
+  if (!btn || !btn.isConnected) { orbStop(); return; }   // strip re-rendered away
+  // Soundwave lanes: Buddy (remote analyser, blue) and You (mic, fuchsia).
+  const strip = btn.closest(".dial-strip");
+  if (strip) {
+    const rw = strip.querySelector('[data-wave="remote"]');
+    const mw = strip.querySelector('[data-wave="mic"]');
+    if (rw) _orbDrawWave(rw, _voiceOrb.analyser, "#6ea0ff");
+    if (mw) _orbDrawWave(mw, _voiceOrb.micAnalyser, "#F72A72");
+  }
+  const canvas = btn.querySelector(".orb-canvas");
+  const analyser = _voiceOrb.analyser;
+  if (!canvas || !analyser) { _voiceOrb.raf = requestAnimationFrame(_orbDrawLoop); return; }
+  const g = canvas.getContext("2d");
+  const data = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(data);
+  let sum = 0; for (let i = 2; i < 40; i++) sum += data[i];
+  const vol = Math.min(1, (sum / 38) / 140);            // smoothed speech band
+  _voiceOrb.vol = (_voiceOrb.vol || 0) * 0.7 + vol * 0.3;
+  const W = canvas.width, C = W / 2, base = W * 0.30;
+  const t = performance.now() / 1000;
+  g.clearRect(0, 0, W, W);
+  g.beginPath();
+  const PTS = 72;
+  for (let i = 0; i <= PTS; i++) {
+    const th = (i / PTS) * Math.PI * 2;
+    const wob = Math.sin(th * 3 + t * 2.1) * 0.35 + Math.sin(th * 5 - t * 1.7) * 0.3 + Math.sin(th * 8 + t * 3.3) * 0.2;
+    const r = base * (1 + 0.03 * Math.sin(t * 1.4) + _voiceOrb.vol * 0.38 * wob);
+    const x = C + Math.cos(th) * r, y = C + Math.sin(th) * r;
+    i === 0 ? g.moveTo(x, y) : g.lineTo(x, y);
+  }
+  g.closePath();
+  g.lineWidth = 2.4;
+  g.strokeStyle = "#6ea0ff";
+  g.shadowColor = "#044EF4";
+  g.shadowBlur = 14 + _voiceOrb.vol * 26;
+  g.stroke();
+  _voiceOrb.raf = requestAnimationFrame(_orbDrawLoop);
+}
+
 function renderStepSection(step, i) {
   const isActive = step.route === state.activeStep;
   const isVisited = state.visited.includes(step.route);
@@ -4297,13 +5407,7 @@ function renderStepSection(step, i) {
     ? `Now active · ${escapeHtml(step.step)} · ${escapeHtml(step.name)}`
     : `${escapeHtml(step.step)} · ${escapeHtml(step.name)} · ${isVisited ? "unlocked" : "locked"}`;
   const teaser = `<div class="step-teaser">${escapeHtml(step.desc.split(". ")[0])}.</div>`;
-  const isCurrentDialTarget = wizard.setup?.route === step.route;
-  const callCta = wizard.setup?.phone_number ? `
-    <div class="step-call-cta">
-      <span class="scc-icon">📞</span>
-      <div><strong>Call ${escapeHtml(formatPhone(wizard.setup.phone_number))} now and ${escapeHtml(step.callPrompt)}</strong>
-      <span class="scc-sub">${isCurrentDialTarget ? "Your number already dials this version." : "Selecting this version points your number here."}</span></div>
-    </div>` : "";
+  const callCta = renderDialStrip(step);
   const body = `
     <div class="step-detail-body">
       <p class="desc">${escapeHtml(step.desc)}</p>
@@ -4356,6 +5460,8 @@ const AUTOPOINT_DEBOUNCE_MS = 400;  // debounce rapid arrow-key / scroll selecti
 let _autoPointTimer = null;
 let _autoPointInFlight = false;
 function autoPointNumber(route) {
+  const sharedDeployment = (window._account || {}).shared === true;
+  if (sharedDeployment) return;               // dedicated per-version numbers; /api/setup/route is 403 here
   if (!wizard.setup?.phone_number) return;     // nothing provisioned yet
   if (wizard.setup.route === route) return;    // already pointed here (dedupe)
   clearTimeout(_autoPointTimer);
@@ -4436,37 +5542,207 @@ function wireWorkshopKeys() {
 
 /* ---- Render dispatcher ---- */
 function renderAll() {
-  // Login gate: without real server-side credentials the user must not reach the
-  // dashboard, regardless of any stale localStorage onboarding flag. Send them to
-  // the wizard's credentials step (the "login page").
-  if (!state.credsConfigured) {
-    if (state.onboardingComplete || state.milestone !== 1) {
-      state.onboardingComplete = false;
-      state.milestone = 1;
-      persist();
-    }
+  // Fresh visitor, ANY mode: the landing. Credentials never gate rendering;
+  // the server enforces everything that matters and the call surfaces gate
+  // contextually (browser-call gate, dial-strip links, outbound card).
+  if (!state.onboardingComplete) {
+    renderLanding();
+    return;
+  }
+  // Solo-only: the explicit post-login "get a number" flow. Transient (never
+  // persisted) and dead in shared mode, where the number wizard must stay
+  // unreachable (shared-account hardening invariant).
+  if (wizard.gettingNumber && window._account?.shared !== true) {
     renderOnboarding();
     return;
   }
-  if (state.onboardingComplete) {
-    renderWorkshop();
-  } else {
-    // Creds already configured (a local .env, or a returning configured session) —
-    // skip the credentials-entry step so the user is never re-prompted to "log in".
-    // Exception: if the user explicitly clicked "Back to credentials" to change them,
-    // honor that intent and let them sit on step 1 until they resubmit.
-    if (state.milestone === 1 && !wizard.editingCreds) {
-      state.milestone = 2;
-      persist();
-    }
-    renderOnboarding();
-  }
+  renderWorkshop();
 }
 
 apiLog.init();
 receipts.init();
 apiTheater.init();
 loadConfig();
+
+/* =========================================================================
+ *  Outbound Capstone — gate, sandbox, and call wiring
+ * =========================================================================
+ *
+ * Gate: all four STEPS_META routes must be in state.visited before the
+ * capstone unlocks. The "Buddy calls you" direction card lives inline in the
+ * static #cf-section call hub; updateCapstoneGate() locks/unlocks it (a lock
+ * overlay covers the sandbox until then). There is no separate capstone screen.
+ *
+ * Sandbox: one inline <input> (the destination) sits inside a code-editor-styled
+ * block, pre-filled from state.verifiedNumber. The voicemail line is static
+ * (a fixed server-side default) so attendees can't change each other's Buddy.
+ *
+ * Place Call: submits only {to} to POST /api/outbound/call via the existing
+ * swApi helper — the voicemail message is fixed server-side, never sent by
+ * the UI — then shows the call_id or error inline.
+ * ========================================================================= */
+
+const CAPSTONE_ROUTES = STEPS_META.map(s => s.route);
+
+/** True when every guided route has been visited at least once. */
+function capstoneUnlocked() {
+  return CAPSTONE_ROUTES.every(r => state.visited.includes(r));
+}
+
+/** Lock or unlock the outbound capstone direction card (the "Buddy calls you"
+ *  card in the static finale section) based on visited progress. Locked until
+ *  every guided version has been opened at least once. */
+function updateCapstoneGate() {
+  const card = document.getElementById("capstone-card");
+  if (!card) return;
+  const built = capstoneUnlocked();
+  const a = window._account || {};
+  const needsAccount = built && a.shared === true && a.has_own !== true;  // shared, not connected
+  card.classList.toggle("is-locked", !built);
+  card.classList.toggle("needs-account", needsAccount);
+  const connect = document.getElementById("capstone-connect");
+  if (connect) connect.hidden = !needsAccount;
+  // When a login is required, the login prompt is the ONLY message: suppress the
+  // verify callout and the stale hint so the user isn't told to "verify" before
+  // they've even logged in.
+  if (needsAccount) {
+    const v = document.getElementById("capstone-verify"); if (v) v.hidden = true;
+    const h = document.getElementById("capstone-unverified-hint"); if (h) h.classList.remove("show");
+  }
+  const placeBtn = document.getElementById("capstone-place-btn");
+  if (placeBtn) {
+    const usable = built && !needsAccount;
+    placeBtn.disabled = !usable;
+    placeBtn.setAttribute("aria-disabled", String(!usable));
+    placeBtn.style.display = needsAccount ? "none" : "";
+  }
+  // Check verify-needed for own-account users; async, fires and forgets.
+  refreshOutboundVerify();
+}
+
+/** Build the sandbox code panel HTML, embedding two <input> editable fields. */
+function renderCapstoneSandbox() {
+  const prefill = escapeHtml(state.verifiedNumber || "");
+
+  // Only the destination number is editable. The voicemail message is shown
+  // STATIC (read-only) on purpose: it is a fixed, server-side default so one
+  // attendee cannot change what another attendee's Buddy says on a shared
+  // deployment. Place Call sends only the destination.
+  const lines = [
+    { t: '# The call your server places when you hit Place Call:', cls: 'tok-com' },
+    { t: 'client.calling.dial(', cls: '' },
+    { t: '    **{', cls: '' },
+    { t: '        "from": connected_number,', cls: '' },
+    { t: null, kind: 'to', label: '        "to":  ', after: ',   # your phone (editable)' },
+    { t: '        "url":  swml_url("/outbound")', cls: '' },
+    { t: '    })', cls: '' },
+    { t: '' },
+    { t: '# Inside Outbound Buddy (the /outbound agent):', cls: 'tok-com' },
+    { t: 'self.set_params({', cls: '' },
+    { t: '    "wait_for_user": True,   # Buddy listens first', cls: '' },
+    { t: '    "direction":    "outbound"', cls: '' },
+    { t: '})', cls: '' },
+    { t: '' },
+    { t: '# If no one answers, Buddy leaves a fixed voicemail.', cls: 'tok-com' },
+  ];
+
+  const linesHtml = lines.map(l => {
+    if (l.kind === 'to') {
+      return `<span class="capstone-sb-line">`
+        + `<span class="tok-str">${escapeHtml(l.label)}</span>`
+        + `<input class="capstone-field" id="capstone-to" type="tel"`
+        + ` value="${prefill}"`
+        + ` placeholder="+12125550100"`
+        + ` aria-label="Destination phone number"`
+        + ` autocomplete="tel" spellcheck="false" />`
+        + `<span class="tok-com">${escapeHtml(l.after)}</span>`
+        + `</span>`;
+    }
+    if (!l.t) return `<span class="capstone-sb-line"> </span>`;
+    const highlighted = hlPy(l.t);
+    return `<span class="capstone-sb-line">${highlighted}</span>`;
+  }).join("");
+
+  return `
+    <div class="capstone-sb-head">
+      <span class="capstone-sb-dot"></span>
+      <span class="capstone-sb-dot"></span>
+      <span class="capstone-sb-dot"></span>
+      <span class="capstone-sb-lang">outbound_agent.py</span>
+    </div>
+    <pre class="capstone-sb-pre">${linesHtml}</pre>`;
+}
+
+/** Open (reveal) the capstone screen and boot its Live Wire feed. */
+/** Attach the Place Call handler (called after the sandbox is rendered). */
+function wireCapstonePlaceCall() {
+  const btn = document.getElementById("capstone-place-btn");
+  if (!btn) return;
+  // Remove previous listener by replacing the node
+  const fresh = btn.cloneNode(true);
+  btn.parentNode.replaceChild(fresh, btn);
+  fresh.addEventListener("click", handleCapstoneCall);
+}
+
+async function handleCapstoneCall() {
+  const toInput = document.getElementById("capstone-to");
+  const placeBtn = document.getElementById("capstone-place-btn");
+  const statusEl = document.getElementById("capstone-status");
+
+  if (!toInput || !placeBtn || !statusEl) return;
+
+  const rawTo = (toInput.value || "").trim();
+
+  if (!rawTo) {
+    statusEl.textContent = "Enter a destination number first.";
+    statusEl.className = "capstone-status show err";
+    return;
+  }
+  // Fix formatting for the user, or reject if it isn't a plausible destination.
+  const norm = normalizeE164(rawTo);
+  if (!norm.ok) {
+    statusEl.textContent = "That doesn't look like a valid phone number. Use a format like +1 555 123 4567.";
+    statusEl.className = "capstone-status show err";
+    return;
+  }
+  const to = norm.e164;
+  toInput.value = to;   // reflect the normalized value back to the user
+
+  placeBtn.disabled = true;
+  placeBtn.className = "capstone-place-btn is-placing";
+  placeBtn.textContent = "Placing…";
+  statusEl.textContent = "Dialing — your phone should ring within a few seconds.";
+  statusEl.className = "capstone-status show ok";
+
+  // Only the destination is sent; the voicemail message is a fixed server-side
+  // default (kept static so attendees can't change each other's Buddy).
+  const r = await swApi("POST", "/api/outbound/call", { to }, { label: "place outbound call to attendee" });
+
+  if (r.ok && r.data?.ok) {
+    const callId = r.data.call_id || "";
+    statusEl.textContent = "Ringing! Call ID: " + (callId || "(pending)") + ". Pick up and wait for Buddy to listen.";
+    statusEl.className = "capstone-status show ok";
+    placeBtn.textContent = "Call placed";
+    placeBtn.className = "capstone-place-btn";
+    // Re-enable after a cooldown so the user can place a second call (voicemail run)
+    setTimeout(() => {
+      placeBtn.disabled = false;
+      placeBtn.textContent = "Place Call Again";
+    }, 8000);
+  } else {
+    const errMsg = (r.data && r.data.error) ? r.data.error : ("HTTP " + (r.status || "error"));
+    statusEl.textContent = "Call failed: " + errMsg;
+    statusEl.className = "capstone-status show err";
+    placeBtn.disabled = false;
+    placeBtn.className = "capstone-place-btn";
+    placeBtn.textContent = "Place Call";
+  }
+}
+
+/* The capstone gate button lives inside #app, which renderAll() re-renders on
+   every setActiveStep (visiting a step updates state.visited), and renderWorkshop()
+   calls updateCapstoneGate() at the end of that render, so the gate stays in sync
+   with no extra patching. */
 </script>
 
 <script>

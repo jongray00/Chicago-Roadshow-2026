@@ -2,7 +2,7 @@
 
 Records are keyed by (route, name), NOT name alone: the workshop registers the
 same function name on several agents (three different tell_joke implementations
-live on /step06, /step07, and /step11), and each implementation needs its own
+live on /step06, /step07, and /complete), and each implementation needs its own
 row, label, and test result. `kind` distinguishes how the function is wired:
 "tool" (custom define_tool handler), "skill" (registered by an SDK skill, with
 the skill name in `skill`), or "datamap" (serverless, runs on SignalWire).

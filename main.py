@@ -22,8 +22,11 @@ DEPLOYMENT NOTES (Replit Autoscale)
 """
 
 import asyncio
+import base64
 import json
+import logging
 import os
+import secrets
 import signal
 import sys
 import uuid
@@ -59,7 +62,11 @@ def _load_dotenv(path=".env"):
 
 # Load local .env (if present) BEFORE startup so credentials are available for
 # the credentials-status endpoint and the panel auto-collapses during local dev.
-_load_dotenv()
+# Guard: only load once per process so that importlib.reload (used in tests to
+# swap env vars) does not re-read the file and undo monkeypatched deletions.
+if not os.environ.get("_DOTENV_LOADED"):
+    _load_dotenv()
+    os.environ["_DOTENV_LOADED"] = "1"
 
 _SESSIONS = session_store.SessionStore(path=".workshop_sessions.json")
 _SESSIONS.load()
@@ -159,20 +166,39 @@ from python.steps.step08_weather import WeatherJokeAgent
 from python.steps.step09_polish import PolishedAgent
 from python.steps.step10_skills import SkillsAgent
 from python.steps.step11_complete import CompleteAgent
+from python.steps.step14_outbound import OutboundAgent
 
 # ---------------------------------------------------------------------------
 # Register all step agents on their own routes
 # ---------------------------------------------------------------------------
 
+# Routes are semantic slugs that match each agent's guided version, so the SWML
+# URL an attendee sees always agrees with the version label (no "/step11" behind
+# "Version 4"). Archived agents keep their historical /stepNN routes -- they are
+# hidden from the UI and their labels are marked "Archived" so no two entries
+# ever read the same version number.
 STEPS = [
-    ("/step04", HelloAgent,          "Version 1 - Hello Agent"),
-    ("/step06", HardcodedJokeAgent,  "Version 2 - Hardcoded Jokes"),
-    ("/step07", ApiJokeAgent,        "Version 3 - Live API Jokes"),
-    ("/step08", WeatherJokeAgent,    "Version 4 - Weather + Jokes"),
-    ("/step09", PolishedAgent,       "Version 5 - Polished Agent"),
-    ("/step10", SkillsAgent,         "Version 6 - Agent with Skills"),
-    ("/step11", CompleteAgent,       "Version 7 - Complete Agent"),
+    ("/hello",    HelloAgent,          "Version 1 - Hello Buddy"),
+    ("/step06",   HardcodedJokeAgent,  "Archived - Hardcoded Jokes"),
+    ("/step07",   ApiJokeAgent,        "Archived - Live API Jokes"),
+    ("/tool",     WeatherJokeAgent,    "Version 2 - Buddy Gets a Tool"),
+    ("/step09",   PolishedAgent,       "Archived - Polished Agent"),
+    ("/skills",   SkillsAgent,         "Version 3 - Buddy Gets Skills"),
+    ("/complete", CompleteAgent,       "Version 4 - Complete Buddy"),
+    ("/outbound", OutboundAgent,       "Outbound - Outbound Buddy"),
 ]
+
+# The guided rebuild path the UI shows: four versions, additive. Archived agents
+# (/step06, /step07, /step09) stay registered above but are absent here, so the
+# learning-path UI never lists them. The outbound capstone is presented once,
+# after the four build steps are complete.
+GUIDED_STEPS = [
+    {"id": "hello",    "route": "/hello",    "title": "Hello Buddy",       "version": 1},
+    {"id": "tool",     "route": "/tool",     "title": "Buddy Gets a Tool", "version": 2},
+    {"id": "skills",   "route": "/skills",   "title": "Buddy Gets Skills", "version": 3},
+    {"id": "complete", "route": "/complete", "title": "Complete Buddy",    "version": 4},
+]
+OUTBOUND_CAPSTONE = {"id": "outbound", "route": "/outbound", "title": "Outbound Buddy"}
 
 server = AgentServer(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
 
@@ -184,6 +210,28 @@ for route, agent_class, _desc in STEPS:
     agent = agent_class(route=route)
     server.register(agent, route)
     registered_agents[route] = agent
+
+# Legacy aliases: the 2026-07 semantic rename (/step04 -> /hello etc.) must not
+# break SWML webhooks provisioned before it (the live shared resource and any
+# attendee-account resources). Each alias is a separate instance constructed
+# with the LEGACY route so its own webhook URLs are self-consistent. Aliases
+# are registered on the server but never listed (absent from STEPS /
+# GUIDED_STEPS) and kept OUT of registered_agents: the function-health
+# registration and admin SWAIG dispatch iterate registered_agents, and alias
+# instances there would surface duplicate health rows (/step08 next to /tool).
+# ALIAS_AGENTS exists so config sync and startup URL validation still reach
+# them.
+LEGACY_ROUTE_ALIASES = {
+    "/step04": HelloAgent,
+    "/step08": WeatherJokeAgent,
+    "/step10": SkillsAgent,
+    "/step11": CompleteAgent,
+}
+ALIAS_AGENTS = {}
+for _legacy_route, _legacy_cls in LEGACY_ROUTE_ALIASES.items():
+    _alias = _legacy_cls(route=_legacy_route)
+    server.register(_alias, _legacy_route)
+    ALIAS_AGENTS[_legacy_route] = _alias
 
 
 def _effective_base():
@@ -205,13 +253,17 @@ def _apply_config():
     user, pw = _CONFIG.effective_auth()
     os.environ["SWML_BASIC_AUTH_USER"] = user
     os.environ["SWML_BASIC_AUTH_PASSWORD"] = pw
-    for _agent in registered_agents.values():
+    # Aliases live outside registered_agents (see ALIAS_AGENTS above) but
+    # validate inbound basic auth exactly like listed agents, so both dicts
+    # must stay in sync.
+    for _agent in list(registered_agents.values()) + list(ALIAS_AGENTS.values()):
         try:
             _agent._basic_auth = (user, pw)
         except Exception:  # noqa: BLE001 - never let config application crash a request
             pass
 
 
+_CONFIG.drop_stale_quick_tunnel(env_default=base_url)  # ephemeral-tunnel guard
 _apply_config()  # apply any persisted overrides at startup
 
 # ---------------------------------------------------------------------------
@@ -242,7 +294,7 @@ def _fn_kind(fobj):
 
 # Every (route, function) pair gets its own health row: tell_joke alone has
 # three different implementations (/step06 hardcoded, /step07 live API,
-# /step11 state-machine), and each must be visible and testable on its own.
+# /complete state-machine), and each must be visible and testable on its own.
 for _route, _agent in registered_agents.items():
     _reg = getattr(getattr(_agent, "_tool_registry", None), "_swaig_functions", {}) or {}
     for _fname, _fobj in _reg.items():
@@ -252,6 +304,11 @@ for _route, _agent in registered_agents.items():
 # ---------------------------------------------------------------------------
 # Config endpoint - landing page fetches auth credentials dynamically
 # ---------------------------------------------------------------------------
+
+@server.app.get("/api/curriculum")
+async def curriculum():
+    return JSONResponse({"guided": GUIDED_STEPS, "capstone": OUTBOUND_CAPSTONE})
+
 
 @server.app.get("/config")
 async def get_config():
@@ -328,6 +385,102 @@ async def validate_urls():
 from fastapi import Request, Response, HTTPException
 import json as _json
 import time as _time
+
+
+# In-process cache of the version->number mapping so we don't hit the Relay API
+# on every page load. Cleared by a successful provision.
+_GUIDED_NUMBERS_CACHE = {"agents": None}
+
+
+@server.app.get("/api/agent/numbers")
+async def agent_numbers(request: Request):
+    """Version -> dedicated PSTN number mapping so each guided card can show
+    'call this number'. Only meaningful in shared mode, where each version has
+    its own dedicated number on the shared workshop account."""
+    if not shared_account_active():
+        return JSONResponse({"shared": False, "agents": []})
+    if _GUIDED_NUMBERS_CACHE["agents"] is None:
+        from python.steps.step12_rest_demo import guided_number_map
+        try:
+            mapping = await asyncio.to_thread(guided_number_map, build_creds_for(request))
+        except Exception as e:  # noqa: BLE001 - never let the landing page fail on this
+            logging.getLogger(__name__).warning("guided_number_map failed: %s", e)
+            return JSONResponse({"shared": True, "agents": []})
+        _GUIDED_NUMBERS_CACHE["agents"] = [
+            {"route": m["route"], "version": m["version"], "title": m["title"], "e164": m["e164"]}
+            for m in mapping
+        ]
+    return JSONResponse({"shared": True, "agents": _GUIDED_NUMBERS_CACHE["agents"]})
+
+
+@server.app.post("/api/admin/provision-agents")
+async def provision_agents(request: Request):
+    """Admin-only: give each guided version its own resource + dedicated number.
+    Idempotent. Behind the same basic auth as /admin."""
+    if not _admin_auth_ok(request):
+        return JSONResponse({"error": "unauthorized"}, status_code=401,
+                            headers={"WWW-Authenticate": 'Basic realm="admin"'})
+    from python.steps.step12_rest_demo import provision_guided_agents
+    try:
+        public = _require_public_base()
+        mapping = await asyncio.to_thread(
+            provision_guided_agents, public, build_creds_for(request)
+        )
+    except Exception as e:  # noqa: BLE001
+        return JSONResponse({"error": str(e)}, status_code=502)
+    _GUIDED_NUMBERS_CACHE["agents"] = [
+        {"route": m["route"], "version": m["version"], "title": m["title"], "e164": m["e164"]}
+        for m in mapping
+    ]
+    return JSONResponse({"ok": True, "agents": _GUIDED_NUMBERS_CACHE["agents"]})
+
+
+@server.app.get("/api/own/numbers")
+async def own_numbers(request: Request):
+    """Numbers on the attendee's OWN account, for the post-login number picker.
+    Also returns a buy_url so a numberless account can go purchase one."""
+    creds = own_creds_for(request)
+    r = _needs_own_account_response(creds)
+    if r: return r
+    from python.steps.step12_rest_demo import list_account_numbers
+    try:
+        nums = await asyncio.to_thread(list_account_numbers, creds)
+    except Exception as e:  # noqa: BLE001
+        return JSONResponse({"error": str(e)}, status_code=502)
+    space = creds.get("SIGNALWIRE_SPACE", "") or ""
+    host = space if space.startswith("http") else ("https://" + space)
+    return JSONResponse({"numbers": nums, "space": space,
+                         "buy_url": host.rstrip("/") + "/phone_numbers"})
+
+
+@server.app.post("/api/own/use-number")
+async def own_use_number(request: Request):
+    """Point the attendee's chosen number at Buddy (inbound) on their OWN
+    account, and remember it as the outbound from-number for this session."""
+    creds = own_creds_for(request)
+    r = _needs_own_account_response(creds)
+    if r: return r
+    raw = await request.body()
+    try:
+        body = _json.loads(raw) if raw else {}
+    except Exception:  # noqa: BLE001
+        body = {}
+    number = _normalize_e164((body or {}).get("number", ""))
+    if not number:
+        return JSONResponse({"error": "a valid number is required"}, status_code=400)
+    from python.steps.step12_rest_demo import assign_number_to_agent
+    try:
+        public = _require_public_base()
+        await asyncio.to_thread(
+            assign_number_to_agent, number, public, FINAL_VERSION_ROUTE,
+            None, creds, request.state.session_id,
+        )
+    except Exception as e:  # noqa: BLE001
+        return JSONResponse({"error": str(e)}, status_code=502)
+    session = _SESSIONS.ensure(request.state.session_id)
+    session.setdefault("setup", {})["phone_number"] = number
+    _SESSIONS.save()
+    return JSONResponse({"ok": True, "number": number, "route": FINAL_VERSION_ROUTE})
 
 
 def _owning_agent(func_name):
@@ -488,7 +641,18 @@ async def admin_export(request: Request):
     )
 
 
-FINAL_VERSION_ROUTE = "/step11"  # Version 7 "Complete Agent"
+FINAL_VERSION_ROUTE = "/complete"  # Version 4 "Complete Buddy"
+
+# Call records are tagged with the route they were SERVED on, and the /step11
+# legacy alias serves the same CompleteAgent to pre-rename webhooks. Any check
+# that asks "did this CALL come from the final Buddy?" must accept both routes.
+# Derived from ALIAS_AGENTS (not hardcoded) so alias changes stay in sync.
+# NOTE: sites that TARGET the final agent (number pointing, provisioning,
+# agent-graph lookups) keep using FINAL_VERSION_ROUTE -- new resources must
+# point at the canonical route only.
+FINAL_ROUTES = {FINAL_VERSION_ROUTE} | {
+    r for r, a in ALIAS_AGENTS.items() if isinstance(a, CompleteAgent)
+}
 
 
 def _final_agent_graph():
@@ -506,12 +670,30 @@ def _final_agent_graph():
 async def postprompt_final(request: Request):
     """Latest captured post-prompt for the final Buddy version (browser-call showcase)."""
     graph = _final_agent_graph()
-    calls = [c for c in call_store.STORE.all() if c.get("agent_route") == FINAL_VERSION_ROUTE]
+    calls = [c for c in call_store.STORE.all() if c.get("agent_route") in FINAL_ROUTES]
     if not calls:
         return JSONResponse({"found": False, "call": None, "agent_graph": graph})
     latest = max(calls, key=lambda c: c.get("received_at", 0))
     safe = {k: v for k, v in latest.items() if k != "raw"}
     return JSONResponse({"found": True, "call": safe, "agent_graph": graph})
+
+
+@server.app.get("/api/account")
+async def account_context(request: Request):
+    own = _session_creds(request)
+    shared = shared_account_active()
+    if own:
+        mode = "own"
+    elif shared:
+        mode = "shared"
+    else:
+        mode = "solo"
+    return JSONResponse({
+        "mode": mode,
+        "shared": shared,
+        "has_own": bool(own),
+        "space": own.get("SIGNALWIRE_SPACE", "") if own else "",
+    })
 
 
 @server.app.get("/api/agent/graph")
@@ -758,7 +940,7 @@ async def run_inputs(pillar: str, request: Request):
     if pillar not in PILLAR_REQUIRED_ENV:
         return JSONResponse({"error": "unknown pillar"}, status_code=404)
     required = PILLAR_REQUIRED_ENV[pillar]
-    creds = creds_for(request)
+    creds = build_creds_for(request)
     missing = [k for k in required if not creds.get(k)]
     return {"pillar": pillar, "required": required, "missing": missing}
 
@@ -776,7 +958,7 @@ async def run_pillar(pillar: str, request: Request):
 
     run_id = uuid.uuid4().hex
     queue: asyncio.Queue = asyncio.Queue()
-    creds = creds_for(request)
+    creds = build_creds_for(request)
     env = {**os.environ, **creds, **{str(k): str(v) for k, v in inputs.items()}}
 
     proc = await asyncio.create_subprocess_exec(
@@ -828,19 +1010,37 @@ async def run_stream(pillar: str, run_id: str):
 
 @server.app.get("/api/relay/config")
 async def relay_config(request: Request):
-    from python.steps.step12_rest_demo import agent_address_id, ensure_agent_handler, mint_guest_token
-    creds = creds_for(request)
+    from python.steps.step12_rest_demo import (
+        agent_address_by_name, agent_address_id, agent_resource_name, ensure_agent_handler, mint_guest_token)
+    route = request.query_params.get("route")
+    if route is not None and route not in {s["route"] for s in GUIDED_STEPS}:
+        return JSONResponse({"error": "unknown route"}, status_code=400)
+    creds = build_creds_for(request)
     if not creds:
         return JSONResponse({"error": "missing credentials"}, status_code=400)
     session = _SESSIONS.ensure(request.state.session_id)
     try:
-        # Browser calls (audio + video) reach the COMPLETE agent (/step11): it has
-        # every capability plus the video avatar, so it's the best showcase.
-        destination = await asyncio.to_thread(
-            ensure_agent_handler, _effective_base(), "/step11", None, creds, session, request.state.session_id
-        )
-        address_id = await asyncio.to_thread(agent_address_id, None, creds)
-        token = await asyncio.to_thread(mint_guest_token, address_id, creds)
+        if route and shared_account_active():
+            # Per-version resources already exist in shared mode (provisioned
+            # with their own dedicated numbers by provision_guided_agents), so
+            # resolve THAT resource's address instead of the legacy single
+            # HANDLER_NAME resource ensure_agent_handler manages below.
+            name = agent_resource_name(route)
+            address_id, destination = await asyncio.to_thread(agent_address_by_name, name, None, creds)
+            if not address_id:
+                return JSONResponse(
+                    {"error": "per-version agent not provisioned yet"}, status_code=503
+                )
+            token = await asyncio.to_thread(mint_guest_token, address_id, creds)
+        else:
+            # Browser calls (audio + video) reach the COMPLETE agent (/complete) by
+            # default: it has every capability plus the video avatar, so it's the
+            # best showcase.
+            destination = await asyncio.to_thread(
+                ensure_agent_handler, _effective_base(), route or "/complete", None, creds, session, request.state.session_id
+            )
+            address_id = await asyncio.to_thread(agent_address_id, None, creds)
+            token = await asyncio.to_thread(mint_guest_token, address_id, creds)
         _SESSIONS.save()
         return JSONResponse({"token": token, "destination": destination})
     except Exception as e:  # noqa: BLE001
@@ -861,8 +1061,63 @@ _CRED_KEYS = ("SIGNALWIRE_PROJECT_ID", "SIGNALWIRE_TOKEN", "SIGNALWIRE_SPACE")
 _SESSION_COOKIE = "sw_session"
 
 
+# --- Admin HTTP Basic auth ------------------------------------------------
+# The /admin dashboard exposes every call's transcript, summary, and metadata
+# across all attendees, so it must not be world-readable on a shared deploy.
+# Username defaults to "admin"; password comes from the ADMIN_PASSWORD secret
+# and falls back to the SWML basic-auth password so the route is never open.
+_ADMIN_USER = os.environ.get("ADMIN_USER", "admin")
+# Unset → fall back to the SWML basic-auth password (always protected by default).
+# Explicitly set to "" → auth disabled (opt-out for trusted/local/CI use).
+# Boot-time snapshots kept for tests/introspection; the RUNTIME check resolves
+# per request via _admin_password() so a boot-order quirk (auth_pass empty at
+# import) or a live SWML-password change can never freeze the gate open/stale.
+_admin_pw_env = os.environ.get("ADMIN_PASSWORD")
+_ADMIN_PASSWORD = _admin_pw_env if _admin_pw_env is not None else auth_pass
+_ADMIN_AUTH_ENABLED = bool(_ADMIN_PASSWORD)
+
+
+def _admin_password() -> str:
+    """The password the admin gate expects RIGHT NOW (dynamic, never frozen).
+    ADMIN_PASSWORD env wins (empty string = explicit opt-out); unset falls back
+    to the current effective SWML basic-auth password."""
+    pw_env = os.environ.get("ADMIN_PASSWORD")
+    if pw_env is not None:
+        return pw_env
+    return _CONFIG.effective_auth()[1] or ""
+
+
+def _admin_auth_ok(request: Request) -> bool:
+    """Constant-time check of the Authorization: Basic header against admin creds."""
+    expected_pw = _admin_password()
+    if not expected_pw:
+        return True                     # gate explicitly disabled
+    header = request.headers.get("authorization", "")
+    if not header.startswith("Basic "):
+        return False
+    try:
+        decoded = base64.b64decode(header[6:]).decode("utf-8", "replace")
+    except Exception:  # noqa: BLE001
+        return False
+    user, _, pw = decoded.partition(":")
+    return (secrets.compare_digest(user.encode(), os.environ.get("ADMIN_USER", "admin").encode())
+            and secrets.compare_digest(pw.encode(), expected_pw.encode()))
+
+
 @server.app.middleware("http")
 async def _session_cookie(request: Request, call_next):
+    # Gate the admin dashboard (page + APIs + SSE) behind HTTP Basic auth.
+    # The browser prompts once at /admin and reuses the credentials for the
+    # /admin/* fetches and the EventSource stream on the same origin.
+    _path = request.url.path
+    if _admin_password() and (_path == "/admin" or _path.startswith("/admin/")):
+        if not _admin_auth_ok(request):
+            return Response(
+                status_code=401,
+                headers={"WWW-Authenticate": 'Basic realm="Workshop Admin"'},
+                content="Authentication required.",
+            )
+
     # Auto-detect the public base from the first real (non-local) request so the
     # *.replit.app URL self-populates with no Secret to set. A manual admin
     # override always wins (effective_base checks it first).
@@ -886,25 +1141,69 @@ async def _session_cookie(request: Request, call_next):
     return response
 
 
-def env_fallback_allowed() -> bool:
-    """Allow falling back to env/.env creds ONLY when not a Replit deployment."""
-    return not os.environ.get("REPLIT_DEPLOYMENT")
+def shared_account_active() -> bool:
+    """True when this deployment runs on the shared workshop account: the build
+    runs on the SignalWire env creds and outbound/verification require the
+    attendee's own account.
+
+    This is the DEFAULT whenever the shared creds are present (the workshop
+    always defaults to the workshop account). Set WORKSHOP_SHARED_ACCOUNT to a
+    falsy value (0/false/no/off) to force the per-attendee "bring your own from
+    the start" model instead. With no creds present it is always inactive."""
+    if not all(os.environ.get(k) for k in _CRED_KEYS):
+        return False
+    flag = os.environ.get("WORKSHOP_SHARED_ACCOUNT")
+    if flag is None:
+        return True  # default on when the workshop creds are available
+    return flag.strip().lower() not in ("0", "false", "no", "off", "")
 
 
 def _env_creds() -> dict:
     return {k: os.environ[k] for k in _CRED_KEYS if os.environ.get(k)}
 
 
-def creds_for(request: Request) -> dict:
-    """The caller session's creds, or env creds when running locally (dev)."""
+def _session_creds(request: Request) -> dict:
+    """Only the creds the attendee entered this session (never env)."""
     rec = _SESSIONS.ensure(request.state.session_id)
     if all(rec["creds"].get(k) for k in _CRED_KEYS):
         return dict(rec["creds"])
-    if env_fallback_allowed():
+    return {}
+
+
+def creds_for(request: Request) -> dict:
+    """Creds for the build/inbound path: the session's own creds, else the
+    shared workspace env creds ONLY in explicit WORKSHOP_SHARED_ACCOUNT mode.
+    There is no local/dev auto-login: a fresh session with no creds gets {} so
+    the attendee must enter their own credentials. Outbound/verification must
+    use own_creds_for(), never this."""
+    own = _session_creds(request)
+    if own:
+        return own
+    if shared_account_active():
         env = _env_creds()
         if all(env.get(k) for k in _CRED_KEYS):
             return env
     return {}
+
+
+def own_creds_for(request: Request) -> dict:
+    """Creds for outbound + verification: the attendee's OWN account only.
+    In shared mode this never falls back to the shared/env token; off shared
+    mode it matches creds_for (solo/local dev uses its own env creds)."""
+    if shared_account_active():
+        return _session_creds(request)
+    return creds_for(request)
+
+
+def build_creds_for(request: Request) -> dict:
+    """Creds for the guided-build surface (browser call, dedicated numbers,
+    provisioning, wizard reads, pillar runs). In shared mode this is ALWAYS the
+    shared workspace, even after the attendee connects their own account: their
+    creds are scoped to outbound/verify only (own_creds_for). Off shared mode
+    it matches creds_for."""
+    if shared_account_active():
+        return _env_creds()
+    return creds_for(request)
 
 
 def _credentials_status_for(creds: dict):
@@ -950,6 +1249,14 @@ async def set_credentials(request: Request):
     _SESSIONS.save()
     return JSONResponse(_credentials_status_for(creds_for(request)))
 
+
+@server.app.post("/api/credentials/clear")
+async def clear_credentials(request: Request):
+    rec = _SESSIONS.ensure(request.state.session_id)
+    rec["creds"] = {}
+    _SESSIONS.save()
+    return JSONResponse({"ok": True})
+
 # ---------------------------------------------------------------------------
 # Workshop setup — automate phone-number + webhook plumbing via REST.
 # Endpoints used by the new onboarding wizard and the per-agent
@@ -966,6 +1273,34 @@ def _require_public_base():
     return base
 
 
+def _normalize_e164(raw: str):
+    """Coerce a user-typed destination into E.164, or return "" if implausible.
+
+    Mirrors the frontend normalizeE164: strips spaces/dashes/parens, handles
+    00/011 international prefixes and missing +, and defaults bare 10-digit
+    numbers to North America (+1)."""
+    if not raw:
+        return ""
+    s = str(raw).strip()
+    had_plus = s.startswith("+")
+    digits = "".join(ch for ch in s if ch.isdigit())
+    if not had_plus and digits.startswith("011"):
+        digits = digits[3:]
+    elif not had_plus and digits.startswith("00"):
+        digits = digits[2:]
+    if not digits:
+        return ""
+    if had_plus:
+        return "+" + digits if 8 <= len(digits) <= 15 else ""
+    if len(digits) == 10:
+        return "+1" + digits
+    if len(digits) == 11 and digits.startswith("1"):
+        return "+" + digits
+    if 11 <= len(digits) <= 15:
+        return "+" + digits
+    return ""
+
+
 def _normalize_route(route: str) -> str:
     if not route or not route.startswith("/"):
         raise RuntimeError("route must start with /")
@@ -980,16 +1315,40 @@ def _missing_creds_response(creds):
     return None
 
 
+def _needs_own_account_response(creds):
+    """400 for outbound/verify when the session has no own-account creds."""
+    if not creds:
+        return JSONResponse(
+            {"error": "Connect your own SignalWire account to place calls or verify a number.",
+             "needs_own_account": True},
+            status_code=400,
+        )
+    return None
+
+
+def _shared_setup_locked_response():
+    """403 for the number wizard on a shared deployment: attendees must never
+    purchase or re-route numbers on the shared workshop token. Their own
+    numbers are managed through /api/own/*."""
+    if shared_account_active():
+        return JSONResponse(
+            {"error": "Number setup is disabled on the shared workshop deployment.",
+             "shared_mode": True},
+            status_code=403,
+        )
+    return None
+
+
 @server.app.get("/api/setup/status")
 async def setup_status(request: Request):
     from python.provisioning import setup_status as _status
     session = _SESSIONS.ensure(request.state.session_id)
-    return JSONResponse(_status(creds_for(request), session.get("setup", {}), base_url or ""))
+    return JSONResponse(_status(build_creds_for(request), session.get("setup", {}), base_url or ""))
 
 
 @server.app.get("/api/setup/numbers")
 async def setup_numbers(request: Request):
-    creds = creds_for(request)
+    creds = build_creds_for(request)
     r = _missing_creds_response(creds)
     if r: return r
     from python.provisioning import list_existing_numbers
@@ -1002,6 +1361,8 @@ async def setup_numbers(request: Request):
 
 @server.app.post("/api/setup/search")
 async def setup_search(request: Request):
+    r = _shared_setup_locked_response()
+    if r: return r
     creds = creds_for(request)
     r = _missing_creds_response(creds)
     if r: return r
@@ -1020,6 +1381,8 @@ async def setup_search(request: Request):
 
 @server.app.post("/api/setup/select")
 async def setup_select(request: Request):
+    r = _shared_setup_locked_response()
+    if r: return r
     creds = creds_for(request)
     r = _missing_creds_response(creds)
     if r: return r
@@ -1028,7 +1391,7 @@ async def setup_select(request: Request):
     except RuntimeError as e:
         return JSONResponse({"error": str(e)}, status_code=400)
     raw = await request.body(); body = json.loads(raw) if raw else {}
-    route = body.get("route", "/step04")
+    route = body.get("route", "/hello")
     try:
         route = _normalize_route(route)
     except RuntimeError as e:
@@ -1052,6 +1415,8 @@ async def setup_select(request: Request):
 
 @server.app.post("/api/setup/route")
 async def setup_route(request: Request):
+    r = _shared_setup_locked_response()
+    if r: return r
     creds = creds_for(request)
     r = _missing_creds_response(creds)
     if r: return r
@@ -1084,6 +1449,154 @@ async def setup_reset(request: Request):
 
 
 # ---------------------------------------------------------------------------
+# Verified caller-ID routes
+# ---------------------------------------------------------------------------
+
+@server.app.get("/api/verify/needed")
+async def verify_needed(request: Request):
+    creds = own_creds_for(request)
+    if not creds:
+        return JSONResponse({"needed": False, "trial": False, "verified": False})
+    to = _normalize_e164(request.query_params.get("to") or "")
+    from python.steps.step12_rest_demo import account_is_trial, list_verified_caller_ids
+    trial = await asyncio.to_thread(account_is_trial, creds=creds)
+    verified = False
+    if to:
+        for v in await asyncio.to_thread(list_verified_caller_ids, creds=creds):
+            if v.get("verified") and v.get("number") == to:
+                verified = True
+                break
+    return JSONResponse({"needed": bool(trial and not verified), "trial": bool(trial), "verified": bool(verified)})
+
+
+@server.app.get("/api/verify/status")
+async def verify_status(request: Request):
+    from python.steps.step12_rest_demo import list_verified_caller_ids
+    creds = own_creds_for(request)
+    r = _needs_own_account_response(creds)
+    if r: return r
+    try:
+        nums = await asyncio.to_thread(list_verified_caller_ids, creds=creds)
+    except Exception as e:  # noqa: BLE001
+        return JSONResponse({"error": str(e)}, status_code=502)
+    slim = [{"id": n.get("id"), "number": n.get("number"), "verified": bool(n.get("verified"))}
+            for n in nums]
+    return JSONResponse({"has_verified": any(n["verified"] for n in slim), "numbers": slim})
+
+
+@server.app.post("/api/verify/start")
+async def verify_start(request: Request):
+    from python.steps.step12_rest_demo import create_verified_caller_id
+    creds = own_creds_for(request)
+    r = _needs_own_account_response(creds)
+    if r: return r
+    raw = await request.body()
+    try:
+        body = _json.loads(raw) if raw else {}
+    except Exception:  # noqa: BLE001
+        body = {}
+    number = _normalize_e164((body or {}).get("number", ""))
+    if not number:
+        return JSONResponse(
+            {"error": "That doesn't look like a valid phone number. Use a format like +1 555 123 4567."},
+            status_code=400)
+    try:
+        out = await asyncio.to_thread(create_verified_caller_id, number, name=(body or {}).get("name"), creds=creds)
+    except Exception as e:  # noqa: BLE001
+        return JSONResponse({"error": str(e)}, status_code=502)
+    return JSONResponse({"id": out.get("id"), "verified": bool(out.get("verified"))})
+
+
+@server.app.post("/api/verify/confirm")
+async def verify_confirm(request: Request):
+    from python.steps.step12_rest_demo import validate_verified_caller_id
+    creds = own_creds_for(request)
+    r = _needs_own_account_response(creds)
+    if r: return r
+    raw = await request.body()
+    try:
+        body = _json.loads(raw) if raw else {}
+    except Exception:  # noqa: BLE001
+        body = {}
+    vid, code = (body or {}).get("id"), (body or {}).get("code")
+    if not vid or not code:
+        return JSONResponse({"error": "id and code are required"}, status_code=400)
+    try:
+        out = await asyncio.to_thread(validate_verified_caller_id, vid, code, creds=creds)
+    except Exception as e:  # noqa: BLE001
+        return JSONResponse({"error": str(e)}, status_code=502)
+    return JSONResponse({"verified": bool(out.get("verified"))})
+
+
+@server.app.post("/api/verify/redial")
+async def verify_redial(request: Request):
+    from python.steps.step12_rest_demo import redial_verified_caller_id
+    creds = own_creds_for(request)
+    r = _needs_own_account_response(creds)
+    if r: return r
+    raw = await request.body()
+    try:
+        body = _json.loads(raw) if raw else {}
+    except Exception:  # noqa: BLE001
+        body = {}
+    vid = (body or {}).get("id")
+    if not vid:
+        return JSONResponse({"error": "id is required"}, status_code=400)
+    try:
+        await asyncio.to_thread(redial_verified_caller_id, vid, creds=creds)
+    except Exception as e:  # noqa: BLE001
+        return JSONResponse({"error": str(e)}, status_code=502)
+    return JSONResponse({"ok": True})
+
+
+@server.app.post("/api/outbound/call")
+async def outbound_call(request: Request):
+    from python.steps.step12_rest_demo import place_outbound_call
+    creds = own_creds_for(request)
+    r = _needs_own_account_response(creds)
+    if r: return r
+    # Defensive parse (matches the setup/verify routes): an empty or non-JSON
+    # body must yield a clean 400, never a 500 from request.json() raising.
+    raw = await request.body()
+    try:
+        body = _json.loads(raw) if raw else {}
+    except Exception:  # noqa: BLE001
+        body = {}
+    to = (body or {}).get("to", "").strip()
+    if not to:
+        return JSONResponse({"error": "to is required"}, status_code=400)
+    # Fix common formatting sloppiness and reject anything that isn't a plausible
+    # E.164 destination (defense in depth; the UI normalizes too).
+    to = _normalize_e164(to)
+    if not to:
+        return JSONResponse(
+            {"error": "That doesn't look like a valid phone number. Use a format like +1 555 123 4567."},
+            status_code=400)
+    session = _SESSIONS.ensure(request.state.session_id)
+    from_number = (session.get("setup", {}) or {}).get("phone_number")
+    if not from_number:
+        from python.steps.step12_rest_demo import first_number_on_account, list_verified_caller_ids
+        from_number = await asyncio.to_thread(first_number_on_account, creds=creds)
+        if not from_number:
+            verified = [v for v in await asyncio.to_thread(list_verified_caller_ids, creds=creds) if v.get("verified")]
+            from_number = verified[0].get("number") if verified else None
+    if not from_number:
+        return JSONResponse(
+            {"error": "No phone number on your account to call from. Buy or import a number first."},
+            status_code=400)
+    try:
+        resp = await asyncio.to_thread(
+            place_outbound_call,
+            to=to, from_number=from_number, route="/outbound",
+            creds=creds, sid=request.state.session_id,
+        )
+    except Exception as e:  # noqa: BLE001
+        return JSONResponse({"error": str(e)}, status_code=502)
+    call_id = resp.get("id") if isinstance(resp, dict) else None
+    return JSONResponse({"ok": True, "call_id": call_id})
+
+
+# ---------------------------------------------------------------------------
 # Print SWML URLs to console
 # ---------------------------------------------------------------------------
 
@@ -1108,7 +1621,10 @@ else:
 
 if base_url:
     errors = []
-    for route, agent in registered_agents.items():
+    # Legacy alias agents (ALIAS_AGENTS) serve live pre-rename webhooks, so
+    # their URLs are validated exactly like the listed agents'.
+    _all_serving = {**registered_agents, **ALIAS_AGENTS}
+    for route, agent in _all_serving.items():
         swaig_url = agent._build_webhook_url("swaig")
         post_url = agent._build_webhook_url("post_prompt")
         if route not in swaig_url:
@@ -1121,7 +1637,7 @@ if base_url:
             print(e)
         print("*** Fix: ensure agent.route is set before server.register() ***\n")
     else:
-        print(f"\nWebhook URL validation passed for {len(registered_agents)} agents.")
+        print(f"\nWebhook URL validation passed for {len(_all_serving)} agents.")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

@@ -11,7 +11,7 @@ import main  # noqa: E402  (builds + registers all agents; server.run() is guard
 
 
 def test_step11_pronounces_live_as_lyve():
-    swml = json.loads(main.registered_agents["/step11"]._render_swml())
+    swml = json.loads(main.registered_agents["/complete"]._render_swml())
     ai = next(v["ai"] for v in swml["sections"]["main"]
               if isinstance(v, dict) and "ai" in v)
     rules = ai.get("pronounce") or []

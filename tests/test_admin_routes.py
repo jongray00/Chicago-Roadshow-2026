@@ -21,8 +21,12 @@ def _server():
     if "TEST_BASE_URL" in os.environ:
         yield
         return
+    # Shared workshop account is the default when .env creds are present; opt out
+    # (WORKSHOP_SHARED_ACCOUNT=0) so these per-session isolation tests run in the
+    # per-attendee path where env creds never auto-authenticate a session.
     env = {**os.environ, "PORT": str(_TEST_PORT), "PYTHONUNBUFFERED": "1",
-           "REPLIT_DEPLOYMENT": "1"}
+           "WORKSHOP_SHARED_ACCOUNT": "0",
+           "ADMIN_PASSWORD": ""}  # "" disables the admin auth gate for tests
     proc = subprocess.Popen([sys.executable, "main.py"],
                             env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     for _ in range(50):

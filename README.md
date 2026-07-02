@@ -33,24 +33,27 @@ click in the wizard) to hear the difference between versions.
 
 > The `/stepNN` route and `stepNN_*.py` file names are historical (some
 > versions were merged during development), so they skip numbers; the
-> **Version 1–7** labels below are the build-journey order you follow. The
-> route numbers and the version numbers intentionally differ.
+> The **guided path is four versions** that build on each other. Each version's
+> route is a semantic slug (`/hello`, `/tool`, `/skills`, `/complete`) that
+> matches its version number, so the SWML URL you see always agrees with the
+> label. Three older agents stay live for reference but are **archived** — the
+> guided UI never lists them.
 
 | Route | Version | What it adds |
 |-------|---------|--------------|
-| `/step04` | Version 1 — Hello Agent | The smallest possible agent: a voice, a personality prompt, a post-prompt summary |
-| `/step06` | Version 2 — Hardcoded Jokes | First SWAIG function (`define_tool`): the AI decides when to call your code |
-| `/step07` | Version 3 — Live API Jokes | The same function backed by a real external API (icanhazdadjoke.com) |
-| `/step08` | Version 4 — Weather + Jokes | A second tool with parameters: live weather for any city via Open-Meteo |
-| `/step09` | Version 5 — Polished Agent | Personality, speech hints, fillers, and timeout tuning |
-| `/step10` | Version 6 — Agent with Skills | Built-in skills: date/time and math in one line each |
-| `/step11` | Version 7 — Complete Agent | Production shape: see below |
+| `/hello` | Version 1 — Hello Buddy | The smallest possible agent: a voice, a personality prompt, a post-prompt summary |
+| `/tool` | Version 2 — Buddy Gets a Tool | A SWAIG function with parameters: live weather for any city via Open-Meteo, and jokes on demand |
+| `/skills` | Version 3 — Buddy Gets Skills | Built-in skills: date/time and math in one line each |
+| `/complete` | Version 4 — Complete Buddy | Production shape: see below |
+| `/step06` | Archived — Hardcoded Jokes | First SWAIG function (`define_tool`): the AI decides when to call your code |
+| `/step07` | Archived — Live API Jokes | The same function backed by a real external API (icanhazdadjoke.com) |
+| `/step09` | Archived — Polished Agent | Personality, speech hints, fillers, and timeout tuning |
 
 All weather lookups run as server-side SWAIG tools (keyless Open-Meteo, no
-prerequisites). DataMap, the serverless alternative, is explained in the step 8
+prerequisites). DataMap, the serverless alternative, is explained in the `/tool`
 source for comparison.
 
-### The final agent (Version 7, `/step11`)
+### The final agent (Version 4, `/complete`)
 
 The complete agent demonstrates what the SDK recommends for real deployments:
 
@@ -113,6 +116,8 @@ Optional server secrets:
 |--------|---------|
 | `SIGNALWIRE_PROJECT_ID` / `SIGNALWIRE_TOKEN` / `SIGNALWIRE_SPACE` | Auto-fill your own credentials for solo testing. Do NOT set these on a shared deployment. |
 | `SWML_BASIC_AUTH_USER` / `SWML_BASIC_AUTH_PASSWORD` | Override the basic auth embedded in SWML webhook URLs (defaults: `workshop` / `password`). |
+| `ADMIN_USER` / `ADMIN_PASSWORD` | HTTP Basic auth for the `/admin` dashboard (it exposes every attendee's call data). Defaults: `admin` / the SWML password above. **Set `ADMIN_PASSWORD` to a strong secret on any shared deployment.** Set it to an empty string to disable the gate (trusted/local only). |
+| `WORKSHOP_SHARED_ACCOUNT` | Shared workshop-account mode: the build runs on the shared account with no credential screen, and attendees connect their own account only for the outbound finale and number verification (never the shared token). **This is the DEFAULT whenever the `SIGNALWIRE_*` creds are present** — the workshop always defaults to the workshop account. Set to `0` (or `false`/`no`/`off`) to force the per-attendee "bring-your-own-from-the-start" model instead. With no `SIGNALWIRE_*` creds present it is inactive regardless. The number wizard (`/api/setup/search|select|route`) is disabled in shared mode; attendees never buy or re-route numbers on the shared account. |
 
 ### Locally
 

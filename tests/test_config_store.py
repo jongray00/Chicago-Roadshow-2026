@@ -16,8 +16,13 @@ def test_effective_base_precedence(monkeypatch, tmp_path):
     c.set_detected_base("https://detected.replit.app")
     assert c.effective_base(env_default="https://startup") == "https://detected.replit.app"
     # explicit env beats the detected guess (operator intent wins; a poisoned
-    # detected_base must never override a deliberately-set tunnel URL)
+    # detected_base must never override a deliberately-set tunnel URL).
+    # LAUNCH-time semantics: the env is captured at construction, so setting
+    # it requires a fresh store (a live env mutation mid-process is exactly
+    # the laundering vector the capture exists to block).
     monkeypatch.setenv("SWML_PROXY_URL_BASE", "https://env")
+    c = config_store.ConfigStore(path=str(tmp_path / "cfg.json")); c.load()
+    c.set_detected_base("https://detected.replit.app")
     assert c.effective_base(env_default="https://startup") == "https://env"
     # manual override beats everything
     c.update(public_base="https://override")
@@ -71,8 +76,8 @@ def test_env_outranks_detected_base(tmp_path, monkeypatch):
     # An operator-set SWML_PROXY_URL_BASE is explicit intent; the detected
     # base is a guess (and can be poisoned — in-process test clients report
     # host 'testserver', which once persisted breaks live resource repoints).
-    store = config_store.ConfigStore(path=str(tmp_path / "c.json"))
     monkeypatch.setenv("SWML_PROXY_URL_BASE", "https://real-tunnel.example.com")
+    store = config_store.ConfigStore(path=str(tmp_path / "c.json"))
     store.set_detected_base("https://detected.example.com")
     assert store.effective_base() == "https://real-tunnel.example.com"
     # Admin override still wins over everything.

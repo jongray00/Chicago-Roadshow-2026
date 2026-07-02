@@ -37,12 +37,14 @@ def _server():
     if "TEST_BASE_URL" in os.environ:
         yield
         return
-    # WHY REPLIT_DEPLOYMENT=1: run the server in its multi-tenant deployment
-    # mode so env/.env credential fallback is disabled. This is what the
-    # credential-isolation tests validate; without it a local .env would make
-    # every fresh session look "configured" and mask cross-session leaks.
+    # Credential-isolation tests need a clean per-attendee server: no session may
+    # be pre-authenticated. The shared workshop account is now the DEFAULT when
+    # .env creds are present (which they are in dev), so we explicitly opt out
+    # with WORKSHOP_SHARED_ACCOUNT=0 to exercise the per-attendee path where a
+    # fresh session is unconfigured and cross-session leaks would surface.
     env = {**os.environ, "PORT": str(_TEST_PORT), "PYTHONUNBUFFERED": "1",
-           "REPLIT_DEPLOYMENT": "1"}
+           "WORKSHOP_SHARED_ACCOUNT": "0",
+           "ADMIN_PASSWORD": ""}  # "" disables the admin auth gate for tests
     proc = subprocess.Popen(
         [sys.executable, "main.py"],
         env=env,
@@ -77,7 +79,7 @@ def _server():
         proc.wait()
 
 
-@pytest.mark.parametrize("route", ["/step04", "/step06", "/step07", "/step08", "/step09", "/step10", "/step11"])
+@pytest.mark.parametrize("route", ["/hello", "/step06", "/step07", "/tool", "/step09", "/skills", "/complete"])
 def test_step_route_returns_swml(route):
     # Agent routes require basic auth (SDK middleware); /config and / do not.
     r = requests.get(f"{BASE_URL}{route}/", auth=_AGENT_AUTH, timeout=10)
@@ -183,10 +185,10 @@ def test_landing_has_workshop_renderer():
 
 
 def test_landing_references_step_routes():
-    """All seven agent routes are referenced in STEPS_META."""
+    """All four guided agent routes are referenced in STEPS_META."""
     r = requests.get(f"{BASE_URL}/", timeout=5)
     text = r.text
-    for route in ["/step04", "/step06", "/step07", "/step08", "/step09", "/step10", "/step11"]:
+    for route in ["/hello", "/tool", "/skills", "/complete"]:
         assert f'"{route}"' in text, f"missing route {route}"
 
 
@@ -380,7 +382,7 @@ def test_agent_graph_endpoint():
     assert r.status_code == 200
     d = r.json()
     assert d["found"] is True
-    assert d["route"] == "/step11"
+    assert d["route"] == "/complete"
     assert d["initial_step"] == "greeting"
     assert any(s["name"] == "weather" for s in d["steps"])
 

@@ -59,17 +59,68 @@ def test_manual_point_button_removed_and_autopoint_present(html):
 
 
 def test_persistent_number_badge_and_call_prompts(html):
-    # A persistent number badge is rendered in the sticky timeline header.
-    assert "function renderPinnedHeader" in html
-    assert "running-version-badge" in html
-    # Each version carries a curated "call Buddy and ask him" prompt.
+    # Each of the four guided versions carries its own curated "call Buddy and
+    # ask him" prompt; pin a distinctive phrase from each so a future edit that
+    # blanks one is caught.
     assert "callPrompt:" in html
-    assert "ask Buddy for a joke." in html
-    assert "the weather in your city" in html
-    # The per-step dial sub-line is conditional on whether the number is
-    # currently pointed at that version, so both phrasings must be present.
-    assert "Your number already dials this version." in html
-    assert "Selecting this version points your number here." in html
+    assert "say hi. Buddy answers" in html                 # Version 1 - Hello Buddy
+    assert "the weather in your city" in html              # Version 2 - Buddy Gets a Tool
+    assert "the time in Tokyo" in html                     # Version 3 - Buddy Gets Skills
+    assert "a dad joke. The full agent" in html            # Version 4 - Complete Buddy
+    # Every guided card carries a persistent dial strip with three states:
+    # dedicated line (shared mode), your-number-follows (solo), and a
+    # never-vanishing empty state. Pin the render fn, the states' copy, the
+    # tel: link, and the copy-number action.
+    assert "renderDialStrip" in html
+    assert "dial-strip" in html
+    assert "Dedicated line" in html
+    assert "Your number" in html
+    assert "No number connected yet" in html
+    assert 'href="tel:' in html
+    assert "data-orb-route" in html
+    assert "Your number dials this version right now." in html
+    assert "Select this version and your number follows." in html
+    # The sticky pinned badge must know about dedicated per-version numbers,
+    # not only the wizard-provisioned one.
+    assert "dedicated line" in html
+
+
+def test_voice_orb_replaces_copy_number(html):
+    # The dial strip's action is now a minimal in-card voice-only browser call
+    # with a voice-reactive ring; the Copy button is gone (the tel: link stays).
+    assert "data-copy-num" not in html
+    assert "function renderVoiceOrb" in html
+    assert "function bootVoiceOrbs" in html
+    assert "cdn.signalwire.com/@signalwire/js" in html   # official UMD bundle, not esm.sh
+    assert "function loadSignalWireSDK" in html
+    assert "StaticCredentialProvider" in html             # v4 credential-provider construction
+    assert "video: false" in html
+    assert "createMediaStreamSource" in html      # WebAudio analyser on remoteStream
+    assert "orb-canvas" in html
+    orb = html.split("function bootVoiceOrbs")[1][:6000]
+    assert "hangup" in orb                        # singleton teardown path
+    # Audio actually PLAYS (hidden sink element, retargetable by the speaker
+    # select), and the live call bar carries both soundwave lanes + devices.
+    assert "srcObject" in html
+    assert "setSinkId" in html
+    assert "ds-callbar" in html
+    assert 'data-wave="remote"' in html
+    assert 'data-wave="mic"' in html
+    assert "updateMicrophone" in html
+
+
+def test_voice_orb_start_is_race_guarded(html):
+    # Overlapping orbStart calls (click orb B while orb A is still connecting)
+    # must not orphan A's call: each start claims a generation token and
+    # re-checks it after every await, tearing down its own locals when
+    # superseded. orbStop also bumps the generation to invalidate in-flight
+    # starts.
+    start = html.split("async function orbStart")[1].split("async function orbStop")[0]
+    assert "++_voiceOrb.gen" in start             # claims a new generation
+    assert "myGen" in start                       # local token compared after awaits
+    assert start.count("stale()") >= 4            # re-checked after each await
+    stop = html.split("async function orbStop")[1][:400]
+    assert "_voiceOrb.gen++" in stop              # stop invalidates in-flight starts
 
 
 def test_browser_call_uses_c2c_widget(html):
@@ -93,7 +144,7 @@ def test_presenter_script_banner_removed(html):
     # The 🎤 SAY presenter banner was removed (2026-06-11): no script data,
     # no render block, no CSS class — versions stay.
     version_count = len(re.findall(r'step:\s*"Version \d+"', html))
-    assert version_count == 7
+    assert version_count == 4
     assert "presenterScript" not in html
     assert "presenter-script" not in html
     assert "🎤" not in html
@@ -117,14 +168,17 @@ def test_tour_and_hint_dots_removed(html):
     assert not (pathlib.Path(__file__).resolve().parent.parent / "web" / "tour.js").exists()
 
 
-def test_call_cta_uses_magenta_accent(html):
-    # The call-Buddy banner uses the SAY banner's pink (rgba(247,42,114,…)),
-    # not the old blue (rgba(10,132,255,…)).
-    m = re.search(r"\.step-call-cta \{[^}]*\}", html)
-    assert m, "step-call-cta CSS missing"
+def test_dial_strip_replaces_call_cta(html):
+    # The dial strip replaced the old pink .step-call-cta banner (2026-07-01).
+    # It uses the primary blue family (rgba(4,78,244,…)) so the phone line reads
+    # as the card's action, distinct from the pink "important parts" panels,
+    # and it pulses only on the active card with reduced-motion respected.
+    assert "step-call-cta" not in html
+    m = re.search(r"\.dial-strip \{[^}]*\}", html)
+    assert m, "dial-strip CSS missing"
     css = m.group(0).replace(" ", "")
-    assert "247,42,114" in css
-    assert "10,132,255" not in css
+    assert "4,78,244" in css
+    assert "prefers-reduced-motion" in html
 
 
 def test_postprompt_modal_present(html):
@@ -157,11 +211,14 @@ def test_state_flow_wired_in_modal(html):
     assert 'id="postprompt-stateflow"' in html
 
 
-def test_postprompt_button_is_prominent(html):
-    # The "See what Buddy captured" button is enlarged and ripples/pulses so
-    # attendees notice the post-prompt reveal (instead of an auto-overlay).
-    assert "pp-cta-pulse" in html  # the ripple/pulse keyframe
-    assert "#open-postprompt {" in html  # dedicated enlarge rule
+def test_postprompt_review_action_present(html):
+    # "See what Buddy captured" is a secondary review action in the finale
+    # section (it auto-opens after a browser call ends; see _browserCallEnded).
+    # It is intentionally NOT a pulsing primary button in the redesign.
+    assert 'id="open-postprompt"' in html        # the review button exists
+    assert "#open-postprompt {" in html          # dedicated styling rule
+    assert "See what Buddy captured" in html      # its label
+    assert "callhub-review" in html               # lives in the call-hub review row
 
 
 import pathlib
@@ -317,7 +374,9 @@ def test_c2c_section_is_static_and_boot_once(html):
     # Exactly one id="cf-section" in the whole file.
     assert html.count('id="cf-section"') == 1, "cf-section must appear exactly once"
     # The static section must carry the hidden attribute in the markup.
-    assert '<section class="cf-section" id="cf-section" hidden' in html, \
+    # (Its class is "finale" since the curriculum-collapse redesign; the id and
+    # static/boot-once nature are what this test guards.)
+    assert 'id="cf-section" hidden' in html, \
         "static cf-section must start hidden"
     # The section must NOT appear inside the renderWorkshop template string.
     # Find the renderWorkshop template (between the backtick after app.innerHTML
@@ -363,10 +422,13 @@ def test_web_components_embed_is_version_pinned(html):
 
 
 def test_hero_is_signalwire_ai_workshop(html):
-    assert "SignalWire <span class=\"accent\">AI Workshop</span>" in html
+    # The old login-first entry hero ("SignalWire AI Workshop" / "as easy as
+    # 1,2,3") is gone: renderLanding's "Meet Buddy" hero is the sole entry
+    # point now, and renderOnboarding was reskinned as the number flow
+    # (Task 7). Guard both banned copies stay gone.
+    assert "SignalWire <span class=\"accent\">AI Workshop</span>" not in html
     assert "Build your first <span class=\"accent\">AI phone agent</span>" not in html
-    # The user explicitly chose this wording; do not "fix" the banned word.
-    assert "Setup for this Workshop is as easy as 1,2,3" in html
+    assert "Setup for this Workshop is as easy as 1,2,3" not in html
 
 
 def test_wizard_leads_deleted(html):
@@ -415,11 +477,11 @@ def test_build_along_removed(html):
 
 
 def test_every_step_has_callouts(html):
-    # all 7 steps carry a callouts array. Every step now embeds its FULL real
+    # all 4 steps carry a callouts array. Every step now embeds its FULL real
     # .py source via fullCode (the "wow, that's the whole agent?" reveal), so
     # the intent is "every step still has real code".
-    assert html.count("callouts:") >= 7
-    assert html.count("fullCode:") >= 7
+    assert html.count("callouts:") >= 4
+    assert html.count("fullCode:") >= 4
 
 
 def test_full_code_verbatim_not_escaped(html):
@@ -441,7 +503,7 @@ def test_callouts_trimmed(html):
     # key ideas, few enough not to overwhelm.
     block = _steps_meta_block(html)
     arrays = re.findall(r"callouts:\s*\[(.*?)\]", block, re.DOTALL)
-    assert len(arrays) >= 7, "expected a callouts array per step"
+    assert len(arrays) >= 4, "expected a callouts array per step"
     for arr in arrays:
         n = len(re.findall(r"\{\s*id:", arr))
         assert 2 <= n <= 4, f"callouts array has {n} entries (want 2-4): {arr[:120]}"
@@ -449,3 +511,144 @@ def test_callouts_trimmed(html):
 
 def test_reduced_motion_block_present(html):
     assert "prefers-reduced-motion" in html
+
+
+def test_shared_mode_hides_restart_wizard(html):
+    # The status pill must branch on shared mode: a reset-progress button instead
+    # of restart-wizard (which would drop a shared attendee into the number wizard).
+    # The pill carries its own id (reset-progress-pill) so it never collides with
+    # the static footer's reset-progress-link button and steal its binding.
+    assert 'id="reset-progress-pill"' in html
+    assert "_account?.shared" in html or "_account || {}).shared" in html
+    # The shared-mode ternary renders the pill id, not the footer's id.
+    ternary = html[html.index("(window._account || {}).shared === true"):]
+    ternary = ternary[:ternary.index("restart-wizard-link")]
+    assert "reset-progress-pill" in ternary
+    assert "reset-progress-link" not in ternary
+    # The footer's all-modes reset button and both wirings stay intact.
+    assert 'id="reset-progress-link"' in html
+    assert 'getElementById("reset-progress-link")' in html
+    assert 'getElementById("reset-progress-pill")' in html
+
+
+def test_render_all_guards_shared_mode_onboarding(html):
+    # renderAll routes: landing when not started; the number wizard ONLY via
+    # the transient gettingNumber flag, and never in shared mode.
+    body = html.split("function renderAll()")[1][:900]
+    assert "renderLanding" in body
+    assert "gettingNumber" in body
+    assert '_account?.shared !== true' in body
+
+
+def test_autopoint_noops_in_shared_mode(html):
+    assert "sharedDeployment" in html.split("function autoPointNumber")[1][:400]
+
+
+def test_chip_scoped_label_when_shared_and_connected(html):
+    assert "· outbound" in html            # chip label: "acme · outbound"
+
+
+def test_acct_menu_explains_scope_in_shared_mode(html):
+    assert "Build runs on the workshop account" in html
+
+
+def test_solo_mode_logout_replaces_fake_switch(html):
+    assert "Log out" in html
+    assert "Confirm log out?" in html
+
+
+def test_needs_own_account_is_handled(html):
+    # Any endpoint can 400 with {needs_own_account:true} (stale session, mode
+    # change). swApi must route that centrally instead of leaving raw error
+    # text in a corner — assert it's handled in JS, not only documented.
+    assert "needs_own_account" in html.split("function swApi")[1][:1200]
+
+
+def test_no_stale_seven_agents_copy(html):
+    assert "Seven agents" not in html
+    assert "Four agents. Each adds one new capability." in html
+
+
+def test_landing_page_start_first(html):
+    # The first screen for every mode: Meet Buddy + Start CTA + deferral copy.
+    # Login is offered quietly (with a signup companion) but never required.
+    assert "function renderLanding" in html
+    assert "Start the workshop" in html
+    assert "Meet <span class=\"accent\">Buddy</span>" in html
+    assert "In the next hour you'll rebuild me from scratch" in html
+    assert "No account needed to build." in html
+    assert 'id="landing-login-link"' in html
+    assert "Create a free Space" in html
+    # Buddy's video avatar headlines the hero (same asset the browser call
+    # renders), ringed in the rotating brand gradient; the Start CTA carries
+    # the brand-gradient btn-start treatment.
+    assert "landing-avatar" in html
+    assert html.count("robot_idle2.mp4") >= 2   # finale card + landing hero
+    assert "btn-start" in html
+    assert "la-spin" in html
+
+
+def test_getting_number_is_transient(html):
+    # The number-flow flag must never round-trip through localStorage: a
+    # reload lands back in the workshop, not a half-open wizard.
+    assert "sdkworkshop.gettingNumber" not in html
+
+
+def test_landing_hides_static_workshop_sections(html):
+    # renderLanding must hide the static workshop-only siblings exactly as
+    # renderOnboarding does, so a mid-workshop restart never leaves the call
+    # hub / grand finale / footer visible underneath the landing.
+    body = html.split("function renderLanding()")[1].split("function startWorkshop()")[0]
+    assert 'getElementById("cf-section")' in body
+    assert 'getElementById("workshop-footer")' in body
+    assert 'getElementById("grand-finale")' in body
+    assert "finaleShown = false" in body
+
+
+def test_connect_drawer_has_signup_callout(html):
+    # Requirement: every "Log in with SignalWire" surface carries a signup
+    # companion. The drawer is THE login surface, so it gets the loud invite
+    # in a compact size.
+    drawer = html.split('id="connect-drawer"')[1][:4000]
+    assert "signup-invite compact" in drawer
+    assert "signalwire.com/signup" in drawer
+
+
+def test_browser_call_gates_on_login_solo(html):
+    # Solo + logged out: the inbound call card asks for login (with signup)
+    # instead of erroring. Shared mode is unaffected.
+    assert "function renderC2CGate" in html
+    assert "Buddy answers this call on your SignalWire Space." in html
+    assert 'id="c2c-login-btn"' in html
+    gate = html.split("function renderC2CGate")[1][:1500]
+    assert "signalwire.com/signup" in gate
+
+
+def test_dial_strip_solo_gates(html):
+    # Solo empty states: logged out -> "Log in" link opens the drawer;
+    # logged in without a number -> "Get a number" enters the number flow.
+    assert "ds-login-link" in html
+    assert "to connect a number, or use the browser call at the end." in html
+    assert "ds-number-link" in html
+    assert "and it follows the version you're viewing." in html
+
+
+def test_capstone_connect_has_signup(html):
+    block = html.split('id="capstone-connect"')[1][:1200]
+    assert "signalwire.com/signup" in block
+    assert "Create a free Space" in block
+
+
+def test_onboarding_is_now_the_number_flow(html):
+    # The wizard's login-first hero is gone; renderOnboarding is reachable only
+    # as the post-login number flow and is titled accordingly.
+    assert "as easy as 1,2,3" not in html
+    assert "Connect a <span class=\"accent\">number</span>" in html
+    assert "back-to-workshop-link" in html
+
+
+def test_every_login_surface_has_signup_companion(html):
+    # Spec requirement 3: wherever "Log in with SignalWire" appears, a signup
+    # callout appears with it. Surfaces: landing, connect drawer, browser-call
+    # gate, outbound card, wizard creds step. Census by URL count.
+    assert html.count("https://signalwire.com/signup") >= 5

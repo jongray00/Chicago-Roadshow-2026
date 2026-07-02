@@ -33,6 +33,13 @@ class ConfigStore:
             "auth_user": None,
             "auth_password": None,
         }
+        # LAUNCH-time env, captured once. _apply_config exports the effective
+        # base back into os.environ for downstream consumers (the SDK and
+        # step12 read it directly); if ranking read the LIVE env it would
+        # launder a stale override into "explicit operator intent" for the
+        # life of the process, surviving even an override clear. Ranking must
+        # only ever see what the operator actually launched with.
+        self._env_base = os.environ.get("SWML_PROXY_URL_BASE")
 
     # ----- persistence -----
     def load(self):
@@ -98,6 +105,26 @@ class ConfigStore:
                 self._data[key] = (val.strip() or None) if isinstance(val, str) else val
         self.save()
 
+    def drop_stale_quick_tunnel(self, env_default=None):
+        """Ephemeral-tunnel guard, run at startup. A persisted public_base
+        override pointing at a *.trycloudflare.com quick-tunnel from a prior
+        session always outlives its tunnel; once the live environment (env var,
+        fresh detection, or the platform default) disagrees, the override is
+        guaranteed stale and would silently break every webhook URL. Drop it so
+        ranking falls through to the live base. Deliberate custom-domain
+        overrides are untouched."""
+        with self._lock:
+            override = self._data.get("public_base")
+            detected = self._data.get("detected_base")
+        live = self._env_base or detected or env_default
+        if (override and "trycloudflare.com" in override
+                and live and live != override):
+            self.update(public_base="")
+            print(f"[config] dropped stale quick-tunnel override {override} "
+                  f"(live base: {live})", flush=True)
+            return True
+        return False
+
     # ----- effective values -----
     def effective_base(self, env_default=None):
         # Explicit operator intent (admin override, then env var) outranks the
@@ -105,7 +132,7 @@ class ConfigStore:
         with self._lock:
             override = self._data.get("public_base")
             detected = self._data.get("detected_base")
-        return override or os.environ.get("SWML_PROXY_URL_BASE") or detected or env_default
+        return override or self._env_base or detected or env_default
 
     def effective_auth(self):
         with self._lock:
@@ -122,7 +149,7 @@ class ConfigStore:
             detected = self._data.get("detected_base")
         user, pw = self.effective_auth()
         return {
-            "public_base": override or os.environ.get("SWML_PROXY_URL_BASE") or detected or env_default or "",
+            "public_base": override or self._env_base or detected or env_default or "",
             "public_base_overridden": bool(override),
             "public_base_detected": detected or "",
             "auth_user": user,
